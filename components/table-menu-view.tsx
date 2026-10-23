@@ -539,7 +539,7 @@ export default function TableMenuView({
 
         {(!useBranding || !branding?.removeQuickServeBranding) && (
           <footer className="mx-auto mt-8 max-w-5xl border-t border-border py-8 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Powered by QuickServe
+            Powered by Chillow
           </footer>
         )}
 

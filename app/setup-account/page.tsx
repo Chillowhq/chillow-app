@@ -91,10 +91,10 @@ function SetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-500 animate-pulse overflow-hidden">
-                <img src="/icon.png" alt="QuickServe" className="w-full h-full object-contain" />
+                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
-                <span className="text-[#EA601A]">Quick</span><span className="text-[#2B304C]">Serve</span>
+                <span className="text-[#2B304C]">Chillow</span>
             </h1>
         </div>
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -107,10 +107,10 @@ function SetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="/icon.png" alt="QuickServe" className="w-full h-full object-contain" />
+                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
-                <span className="text-[#EA601A]">Quick</span><span className="text-[#2B304C]">Serve</span>
+                <span className="text-[#2B304C]">Chillow</span>
             </h1>
         </div>
         <Card className="w-full max-w-md border-destructive/20 shadow-xl overflow-hidden">
@@ -141,10 +141,10 @@ function SetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="/icon.png" alt="QuickServe" className="w-full h-full object-contain" />
+                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
-                <span className="text-[#EA601A]">Quick</span><span className="text-[#2B304C]">Serve</span>
+                <span className="text-[#2B304C]">Chillow</span>
             </h1>
         </div>
         <Card className="w-full max-w-md border-primary/20 shadow-xl overflow-hidden">
@@ -174,10 +174,10 @@ function SetupAccountContent() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] p-4">
       <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-              <img src="/icon.png" alt="QuickServe" className="w-full h-full object-contain" />
+              <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
           </div>
           <h1 className="font-black text-3xl tracking-tight">
-              <span className="text-[#EA601A]">Quick</span><span className="text-[#2B304C]">Serve</span>
+              <span className="text-[#2B304C]">Chillow</span>
           </h1>
       </div>
       
@@ -265,7 +265,7 @@ function SetupAccountContent() {
       </Card>
       
       <p className="mt-8 text-[#94A3B8] text-sm font-medium">
-        &copy; 2026 QuickServe Platform &bull; Secure Account Activation
+        &copy; 2026 Chillow Platform &bull; Secure Account Activation
       </p>
     </div>
   )

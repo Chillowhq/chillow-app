@@ -63,7 +63,7 @@ export default function GuidedSetupChecklist({
               <BadgeCheck className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-foreground">Your QuickServe workspace is ready</h2>
+              <h2 className="text-lg font-black text-foreground">Your Chillow workspace is ready</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 You have completed all core setup requirements. Customers can now place orders or reservations.
               </p>
@@ -205,7 +205,7 @@ export default function GuidedSetupChecklist({
           {optionalTasks.length > 0 && (
             <div className="mt-8 pt-6 border-t border-border">
               <h3 className="text-sm font-bold text-foreground mb-3">Recommended Next Steps</h3>
-              <p className="text-xs text-muted-foreground mb-4 -mt-1">These tasks help you get the most out of QuickServe but are not required to take orders.</p>
+              <p className="text-xs text-muted-foreground mb-4 -mt-1">These tasks help you get the most out of Chillow but are not required to take orders.</p>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {optionalTasks.map((task) => {

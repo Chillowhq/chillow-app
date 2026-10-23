@@ -70,13 +70,13 @@ function ResetPasswordForm() {
       {/* Brand Logo */}
       <div className="flex items-center gap-4 mb-10 transition-all">
           <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-black/20 overflow-hidden bg-white">
-              <img src="/icon.png" alt="QuickServe Logo" className="w-full h-full object-contain" />
+              <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="font-black text-4xl tracking-tight leading-none text-[#0f172a]">
                 Account Security
             </h1>
-            <p className="text-[13px] text-gray-500 font-bold tracking-[0.2em] uppercase mt-1">QuickServe Partner Portal</p>
+            <p className="text-[13px] text-gray-500 font-bold tracking-[0.2em] uppercase mt-1">Chillow Partner Portal</p>
           </div>
       </div>
       
@@ -88,7 +88,7 @@ function ResetPasswordForm() {
              <CardHeader className="text-center pt-10 pb-4 px-10">
                <CardTitle className="text-3xl font-black text-[#2B304C]">New Password</CardTitle>
                <CardDescription className="text-base text-gray-500 mt-2">
-                 Enter your new password below for your QuickServe account.
+                 Enter your new password below for your Chillow account.
                </CardDescription>
              </CardHeader>
              
@@ -204,7 +204,7 @@ function ResetPasswordForm() {
       
       <div className="mt-12 text-center relative z-10 w-full max-w-[440px]">
         <div className="mt-8 flex items-center justify-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
-          <span>&copy; {new Date().getFullYear()} QuickServe</span>
+          <span>&copy; {new Date().getFullYear()} Chillow</span>
           <span className="w-1 h-1 bg-gray-300 rounded-full" />
           <a href="#" className="hover:text-gray-600 transition-colors">Privacy</a>
           <span className="w-1 h-1 bg-gray-300 rounded-full" />

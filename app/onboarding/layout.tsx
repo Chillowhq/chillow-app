@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Get Started — QuickServe",
-  description: "Set up your QuickServe restaurant account in minutes. Create your account, verify your email, configure your business, and go live.",
+  title: "Get Started",
+  description: "Set up your Chillow hospitality account in minutes. Create your account, verify your email, configure your business, and go live.",
 }
 
 export default function OnboardingRouteLayout({

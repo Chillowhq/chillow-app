@@ -54,7 +54,7 @@ function SummaryRows({ count = 4 }: { count?: number }) {
 
 export function CustomerLandingSkeleton() {
   return (
-    <LoadingRegion label="Loading QuickServe" className="min-h-screen overflow-hidden bg-background px-4">
+    <LoadingRegion label="Loading Chillow" className="min-h-screen overflow-hidden bg-background px-4">
       <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center text-center">
         <Skeleton className="mb-8 h-24 w-24 rounded-3xl" />
         <Skeleton className="mb-3 h-12 w-64 max-w-full" />

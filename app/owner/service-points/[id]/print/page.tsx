@@ -84,7 +84,7 @@ export default function PrintPosterPage() {
 
   const businessName =
     [businessSettings?.displayName, businessSettings?.businessName, businessSettings?.name]
-      .find((name) => typeof name === "string" && name.trim()) || "QuickServe"
+      .find((name) => typeof name === "string" && name.trim()) || "Chillow"
 
   return (
     <div className="min-h-screen bg-gray-100/50 flex flex-col items-center py-10 print:bg-white select-none">

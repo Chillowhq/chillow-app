@@ -30,7 +30,7 @@ export default function CustomerHeader({
   displayServicePoint = "Service point",
   isOpen,
 }: CustomerHeaderProps) {
-  const displayName = (useBranding && branding.displayName) || businessName || "QuickServe"
+  const displayName = (useBranding && branding.displayName) || businessName || "Chillow"
   const logoUrl = (useBranding && branding.logoUrl) || businessLogoUrl
   const logoInitials = displayName
     .split(/\s+/)

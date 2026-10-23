@@ -304,7 +304,7 @@ export default function BrandingPage() {
 
   const hasAdvancedBranding = !!user?.entitlements?.advancedBranding;
   const isBasicPlan = !hasAdvancedBranding;
-  const isPro = hasAdvancedBranding; // removeQuickServeBranding is Growth
+  const isPro = hasAdvancedBranding;
 
   return (
     <form onSubmit={handleSubmit(handleSave)} className="pb-20" aria-busy={isSubmitting}>
@@ -514,22 +514,22 @@ export default function BrandingPage() {
                 />
               </div>
 
-              {/* Remove QuickServe Branding */}
+              {/* Remove Chillow Branding */}
               <div className={`pt-6 border-t border-border ${!isPro ? 'opacity-50' : ''}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      Remove QuickServe Branding
+                      Remove Chillow Branding
                       {!isPro && <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] uppercase tracking-wider font-black">Growth</span>}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Hide the "Powered by QuickServe" footer and watermarks from the customer menu.</p>
+                    <p className="text-xs text-muted-foreground mt-1">Hide the "Powered by Chillow" footer and watermarks from the customer menu.</p>
                   </div>
                   <Controller
                     control={control}
                     name="removeQuickServeBranding"
                     render={({ field }) => (
                       <Switch
-                        aria-label="Remove QuickServe branding"
+                        aria-label="Remove Chillow branding"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         disabled={!isPro}
@@ -660,7 +660,7 @@ function CustomerMenuPreview({ branding, preview }: { branding: any; preview: Br
         {/* Fake Footer */}
         {!(useBranding && branding.removeQuickServeBranding) && (
           <div className="py-8 text-center text-[10px] text-muted-foreground/50 font-bold uppercase tracking-widest border-t border-border mt-8 max-w-5xl mx-auto">
-            Powered by QuickServe
+            Powered by Chillow
           </div>
         )}
       </div>

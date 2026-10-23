@@ -285,7 +285,7 @@ export default function LoginPage() {
               Ask your manager to verify access, or{" "}
               <a
                 className="font-semibold text-foreground underline underline-offset-4 hover:text-foreground/75 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                href="mailto:support@quickserve.com"
+                href="mailto:support@chillow.io"
               >
                 contact support
               </a>

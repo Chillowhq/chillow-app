@@ -146,7 +146,7 @@ export function CreateAccountStep({ onComplete, isLoading }: Props) {
         </div>
         <h1 className="text-3xl font-black text-white mb-2">Create your account</h1>
         <p className="text-white/40 text-sm leading-relaxed">
-          Set up your QuickServe owner account. You&apos;ll verify your email in the next step.
+          Set up your Chillow owner account. You&apos;ll verify your email in the next step.
         </p>
       </div>
 
@@ -228,7 +228,7 @@ export function CreateAccountStep({ onComplete, isLoading }: Props) {
             {terms && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
           </div>
           <span className="text-sm text-white/40 leading-relaxed">
-            I agree to QuickServe&apos;s{" "}
+            I agree to Chillow&apos;s{" "}
             <a href="#" className="text-[#EA601A] hover:underline font-medium">Terms of Service</a>
             {" "}and{" "}
             <a href="#" className="text-[#EA601A] hover:underline font-medium">Privacy Policy</a>

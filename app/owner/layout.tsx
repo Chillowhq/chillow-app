@@ -356,12 +356,12 @@ function Sidebar({
       <div className="p-5 border-b border-border">
         <Link href={portalHome} className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-            <img src="/icon.png" alt="QuickServe Logo" className="w-full h-full object-contain" />
+            <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="font-black text-base tracking-tight leading-none">
-              <span className="text-[#EA601A]">Quick</span>
-              <span className="text-[#2B304C] dark:text-foreground">Serve</span>
+              <span className="text-[#2B304C]">Chillow</span>
+      
             </h1>
             <p className="text-[10px] text-muted-foreground mt-0.5">{user.role === "manager" ? "Management Portal" : "Owner Portal"}</p>
           </div>
@@ -475,9 +475,9 @@ function OwnerLayoutInner({
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
-                <img src="/icon.png" alt="QuickServe Logo" className="w-full h-full object-contain" />
+                <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
               </div>
-              <span className="font-bold text-sm">QuickServe</span>
+              <span className="font-bold text-sm">Chillow</span>
             </div>
             <div className="flex items-center gap-1">
               <OwnerNotificationCenter variant="mobile" controller={notifications} />

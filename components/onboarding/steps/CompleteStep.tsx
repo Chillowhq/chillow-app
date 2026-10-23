@@ -60,7 +60,7 @@ export function CompleteStep({ sessionData, onComplete, onBack, isLoading }: Pro
     {
       icon: <Globe className="w-4 h-4" />,
       label: "URL",
-      value: businessData.slug ? `quickserve.com/${businessData.slug}` : "-",
+      value: businessData.slug ? `chillow.io/${businessData.slug}` : "-",
     },
     {
       icon: <MapPin className="w-4 h-4" />,
@@ -104,7 +104,7 @@ export function CompleteStep({ sessionData, onComplete, onBack, isLoading }: Pro
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h1 className="text-3xl font-black text-white mb-3">Your QuickServe workspace is ready</h1>
+          <h1 className="text-3xl font-black text-white mb-3">Your Chillow workspace is ready</h1>
           <p className="text-white/50 text-sm leading-relaxed mb-2">
             There are a few setup steps remaining before customers can fully use the business.
           </p>
@@ -139,7 +139,7 @@ export function CompleteStep({ sessionData, onComplete, onBack, isLoading }: Pro
         </div>
         <h1 className="text-3xl font-black text-white mb-2">Ready to launch!</h1>
         <p className="text-white/40 text-sm leading-relaxed">
-          Review your setup below. Clicking <strong className="text-white/60">Launch My Business</strong> will create your account and publish it on QuickServe.
+          Review your setup below. Clicking <strong className="text-white/60">Launch My Business</strong> will create your account and publish it on Chillow.
         </p>
       </div>
 

@@ -26,7 +26,7 @@ test("transactions refinement keeps financial truth compact and ledger-first", a
 
   assert.match(page, /Gross Revenue/)
   assert.match(page, /Before platform fees · excludes tips/)
-  assert.match(page, /QuickServe Fees/)
+  assert.match(page, /Chillow Fees/)
   assert.match(page, /Net Revenue/)
   assert.match(page, /Collected separately · passed through to staff/)
   assert.match(page, /Transaction ledger/)

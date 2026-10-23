@@ -21,7 +21,7 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-br from-[#EA601A] to-[#ff8c42] rounded-3xl blur-xl opacity-30 animate-pulse" />
             <img
               src="/icon.png"
-              alt="QuickServe"
+              alt="Chillow"
               className="w-24 h-24 rounded-3xl shadow-2xl object-contain relative z-10 ring-4 ring-white/10"
             />
           </div>
@@ -30,12 +30,11 @@ export default function HomePage() {
         {/* Title with gradient */}
         <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
           <h1 className="text-5xl sm:text-6xl font-black mb-3 tracking-tight">
-            <span className="bg-gradient-to-r from-[#EA601A] to-[#ff8c42] bg-clip-text text-transparent">Quick</span>
-            <span className="text-[#2B304C] dark:text-white">Serve</span>
+            <span className="text-[#2B304C] dark:text-white">Chillow</span>
           </h1>
           <div className="flex items-center justify-center gap-2 text-sm font-semibold text-muted-foreground">
             <Sparkles className="w-4 h-4 text-[#EA601A]" />
-            <span>Smart QR Menu Ordering</span>
+            <span>The Connected Hospitality Ecosystem</span>
             <Sparkles className="w-4 h-4 text-[#EA601A]" />
           </div>
         </div>
@@ -58,7 +57,7 @@ export default function HomePage() {
             <div className="relative bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-xl">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
                 <span className="w-8 h-px bg-border" />
-                Quick Demo Access
+                Chillow Demo Access
                 <span className="w-8 h-px bg-border" />
               </p>
 

@@ -12,12 +12,27 @@ const productSans = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "QuickServe - QR Menu",
-  description: "Modern restaurant QR-code ordering experience",
+  title: {
+    default: "Chillow — The Connected Hospitality Ecosystem",
+    template: "%s | Chillow",
+  },
+  description: "Chillow connects guests and hospitality businesses through discovery, reservations, digital menus, ordering, payments, and operations.",
+  applicationName: "Chillow",
+  openGraph: {
+    title: "Chillow — The Connected Hospitality Ecosystem",
+    description: "Make hospitality easier to receive and easier to deliver.",
+    siteName: "Chillow",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Chillow — The Connected Hospitality Ecosystem",
+    description: "Make hospitality easier to receive and easier to deliver.",
+  },
   generator: "",
   icons: {
     icon: "/icon.png",
-    apple: "/apple-icon.png",
+    apple: "/icon.png",
   },
 }
 

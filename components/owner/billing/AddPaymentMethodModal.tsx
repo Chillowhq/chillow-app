@@ -89,7 +89,7 @@ function PaymentForm({
       <div className="flex items-start gap-2 p-3 rounded-xl bg-secondary/50 border border-border">
         <ShieldCheck className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
         <p className="text-[11px] font-medium text-muted-foreground leading-tight">
-          Card details are securely processed by Stripe. QuickServe never stores your card number.
+          Card details are securely processed by Stripe. Chillow never stores your card number.
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export default function AddPaymentMethodModal({
         <DialogHeader>
           <DialogTitle className="text-lg font-black">Add payment method</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Used for QuickServe subscription and offline commission invoices.
+            Used for Chillow subscription and offline commission invoices.
           </DialogDescription>
         </DialogHeader>
 

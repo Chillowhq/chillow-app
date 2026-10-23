@@ -93,7 +93,7 @@ export function CustomerThemeProvider({ children, businessId: propBusinessId }: 
     } as React.CSSProperties
   }, [useBranding, branding])
 
-  // Show a neutral loading state to prevent flashing QuickServe orange
+  // Show a neutral loading state to prevent flashing the platform accent color.
   if (isLoading) {
     return <CustomerRouteSkeleton pathname={pathname} />
   }

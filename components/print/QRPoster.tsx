@@ -36,7 +36,7 @@ export default function QRPoster({
   }, [qrValue])
 
   const displayLabel = servicePointLabel || servicePointCode || "Service Point"
-  const displayBusinessName = businessName?.trim() || "QuickServe"
+  const displayBusinessName = businessName?.trim() || "Chillow"
 
   return (
     <div className="w-full max-w-[800px] mx-auto bg-white overflow-hidden shadow-2xl print:shadow-none print:max-w-[210mm] print:w-full print:min-h-[297mm]">
@@ -145,7 +145,7 @@ export default function QRPoster({
 
       {/* Footer */}
       <div className="bg-[#0A0A0A] text-white/50 text-[10px] uppercase tracking-widest font-bold py-4 px-8 flex items-center justify-center">
-        <span>Powered by quickserve</span>
+        <span>Powered by Chillow</span>
       </div>
     </div>
   )

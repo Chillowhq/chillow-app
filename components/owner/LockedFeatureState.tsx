@@ -29,7 +29,7 @@ const FEATURE_COPY: Record<LockedFeature, FeatureCopy> = {
     eyebrow: "Growth analytics",
     headline: "See exactly what’s driving your business",
     description:
-      "Turn the activity QuickServe already records into clear performance trends and operational insight.",
+      "Turn the activity Chillow already records into clear performance trends and operational insight.",
     benefits: [
       {
         title: "Business performance",
@@ -62,7 +62,7 @@ const FEATURE_COPY: Record<LockedFeature, FeatureCopy> = {
     eyebrow: "Growth · Guest Insights",
     headline: "Turn every visit into customer intelligence",
     description:
-      "QuickServe automatically turns guest activity into profiles, segments, spending insights, and marketing-ready customer data.",
+      "Chillow automatically turns guest activity into profiles, segments, spending insights, and marketing-ready customer data.",
     benefits: [
       {
         title: "Know your highest-value guests",
@@ -95,7 +95,7 @@ const FEATURE_COPY: Record<LockedFeature, FeatureCopy> = {
     eyebrow: "Growth · AI Business Analyst",
     headline: "Understand what changed in your business and what deserves your attention next",
     description:
-      "Every week, QuickServe analyzes your sales, operations, customers, service performance and other available business activity, then turns the most important changes into a concise business briefing.",
+      "Every week, Chillow analyzes your sales, operations, customers, service performance and other available business activity, then turns the most important changes into a concise business briefing.",
     benefits: [
       {
         title: "Weekly business performance briefing",
@@ -105,7 +105,7 @@ const FEATURE_COPY: Record<LockedFeature, FeatureCopy> = {
       {
         title: "Important improvements and risks identified automatically",
         detail:
-          "— QuickServe flags what went well and what needs your attention",
+          "— Chillow flags what went well and what needs your attention",
       },
       {
         title: "Clear priorities for the coming week",
@@ -113,7 +113,7 @@ const FEATURE_COPY: Record<LockedFeature, FeatureCopy> = {
           "— actionable recommendations grounded in your actual business activity",
       },
       {
-        title: "Recommendations grounded in QuickServe activity",
+        title: "Recommendations grounded in Chillow activity",
         detail:
           "— every insight is backed by your real sales, operations, and customer data",
       },

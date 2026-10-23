@@ -14,7 +14,7 @@ export function NotGeneratedState() {
             Mayor is preparing your first weekly briefing
           </h3>
           <p className="max-w-md text-[15px] text-muted-foreground leading-relaxed mx-auto">
-            QuickServe needs a completed week of activity before Mayor can give you a reliable business review.
+            Chillow needs a completed week of activity before Mayor can give you a reliable business review.
           </p>
         </div>
       </CardContent>
@@ -57,7 +57,7 @@ export function FailedState({ onRetry }: { onRetry: () => void }) {
             Mayor couldn't load this week's briefing
           </h3>
           <p className="max-w-md text-[15px] text-muted-foreground leading-relaxed mx-auto mb-6">
-            Your QuickServe analytics are still available. You can try loading again.
+            Your Chillow analytics are still available. You can try loading again.
           </p>
           <Button variant="outline" onClick={onRetry} className="font-medium">
             Try again
@@ -103,7 +103,7 @@ export function InsufficientDataState() {
             Mayor is still learning from your activity
           </h3>
           <p className="max-w-md text-[15px] text-muted-foreground leading-relaxed mx-auto">
-            There isn't enough completed activity yet to produce a reliable weekly business briefing. Continue using QuickServe and your weekly briefing will become more detailed.
+            There isn't enough completed activity yet to produce a reliable weekly business briefing. Continue using Chillow and your weekly briefing will become more detailed.
           </p>
         </div>
       </CardContent>

@@ -1332,7 +1332,7 @@ export default function SettingsPage() {
                       />
                       <div>
                         <p className="font-bold text-foreground text-sm">Instant Booking</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Guests can immediately pay and confirm rooms shown as available. Recommended when QuickServe manages your room inventory.</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Guests can immediately pay and confirm rooms shown as available. Recommended when Chillow manages your room inventory.</p>
                       </div>
                     </label>
                     <label

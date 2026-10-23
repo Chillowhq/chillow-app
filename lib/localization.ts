@@ -1,6 +1,6 @@
 
 /**
- * Localization utilities for QuickServe
+ * Localization utilities for Chillow
  */
 
 /**

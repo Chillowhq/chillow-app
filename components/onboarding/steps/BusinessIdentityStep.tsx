@@ -189,11 +189,11 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
           name="slug"
           render={({ field, fieldState }) => (
             <>
-              <Field id="ob-slug" label="Your QuickServe URL" required error={fieldState.error?.message} className={fieldClassName}>
+              <Field id="ob-slug" label="Your Chillow URL" required error={fieldState.error?.message} className={fieldClassName}>
                 {(controlProps) => (
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/25 text-sm font-medium select-none pointer-events-none whitespace-nowrap">
-                      quickserve.com/
+                      chillow.io/
                     </div>
                     <input
                       {...field}
@@ -218,7 +218,7 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
               </Field>
               {slug && (
                 <p className="text-xs text-white/25 pl-1">
-                  Preview: <span className="text-white/40 font-medium">quickserve.com/{slug}</span>
+                  Preview: <span className="text-white/40 font-medium">chillow.io/{slug}</span>
                 </p>
               )}
               {slugManual && (

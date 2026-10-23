@@ -42,9 +42,9 @@ type BillingTab = "billing" | "payouts" | "performance"
 type BillingResource = "billing" | "commission" | "invoices" | "plans" | "payout" | "feeSettings"
 
 const billingTabs: Array<{ id: BillingTab; label: string; question: string }> = [
-  { id: "billing", label: "Billing", question: "How much do I owe QuickServe?" },
+  { id: "billing", label: "Billing", question: "How much do I owe Chillow?" },
   { id: "payouts", label: "Payouts", question: "When and how do I receive online payments?" },
-  { id: "performance", label: "Performance", question: "How much revenue has QuickServe helped me process?" },
+  { id: "performance", label: "Performance", question: "How much revenue has Chillow helped me process?" },
 ]
 
 const isBillingTab = (value: string | null): value is BillingTab => (
@@ -162,7 +162,7 @@ export default function BillingPage() {
   const [isConnectingStripe, setIsConnectingStripe] = useState(false)
   const [isOpeningStripeDashboard, setIsOpeningStripeDashboard] = useState(false)
 
-  // Sections 2-5: QuickServe Billing (MVP)
+  // Sections 2-5: Chillow Billing (MVP)
   const [billingInfo, setBillingInfo] = useState<any>(null)
   const [plans, setPlans] = useState<any[]>([])
   const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -539,7 +539,7 @@ export default function BillingPage() {
               Payments & Billing
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Manage billing, payouts, and QuickServe revenue in one place
+              Manage billing, payouts, and Chillow revenue in one place
             </p>
           </div>
           <Button
@@ -610,7 +610,7 @@ export default function BillingPage() {
               <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Pending Invoice</p>
                 <p className="text-3xl font-black text-foreground">{formatCurrency(pendingInvoiceAmount)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Subscription plus business-paid QuickServe fees for this billing period.</p>
+                <p className="text-xs text-muted-foreground mt-1">Subscription plus business-paid Chillow fees for this billing period.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
@@ -643,7 +643,7 @@ export default function BillingPage() {
                   <p className="text-lg font-black text-foreground">{formatCurrency(businessPaidFees)}</p>
                 </div>
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Total QuickServe Fees</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Total Chillow Fees</p>
                   <p className="text-lg font-black text-primary">{formatCurrency(totalQuickServeFees)}</p>
                 </div>
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
@@ -669,7 +669,7 @@ export default function BillingPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
                 <div>
                   <h2 className="text-lg font-black text-foreground">Current Subscription</h2>
-                  <p className="text-xs text-muted-foreground font-medium">Your QuickServe subscription</p>
+                  <p className="text-xs text-muted-foreground font-medium">Your Chillow subscription</p>
                 </div>
 
                 {billingInfo?.billingStatus === 'active' ? (
@@ -748,7 +748,7 @@ export default function BillingPage() {
                 <Settings className="w-5 h-5 text-primary" />
                 Platform Fee Settings
               </h2>
-              <p className="text-xs text-muted-foreground font-medium">Control how QuickServe commission fees are handled at checkout</p>
+              <p className="text-xs text-muted-foreground font-medium">Control how Chillow commission fees are handled at checkout</p>
             </div>
           </div>
 
@@ -1079,7 +1079,7 @@ export default function BillingPage() {
                 </p>
               )}
               <p className="text-[10px] text-muted-foreground mt-4 font-medium">
-                Payments are routed directly to your bank account via Stripe. QuickServe deducts a small platform fee per transaction based on your plan.
+                Payments are routed directly to your bank account via Stripe. Chillow deducts a small platform fee per transaction based on your plan.
               </p>
             </div>
           </section>
@@ -1234,8 +1234,8 @@ export default function BillingPage() {
                   <Receipt className="w-5 h-5 text-primary" />
                   Revenue Overview
                 </h2>
-                <p className="text-xs text-muted-foreground font-medium">All-time paid revenue processed through QuickServe.</p>
-                <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider mt-2">Since joining QuickServe</p>
+                <p className="text-xs text-muted-foreground font-medium">All-time paid revenue processed through Chillow.</p>
+                <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider mt-2">Since joining Chillow</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1247,7 +1247,7 @@ export default function BillingPage() {
                 <div className="p-5 rounded-xl border border-primary/20 bg-primary/5">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Net Revenue Processed</p>
                   <p className="text-2xl font-black text-primary">{formatCurrency(netRevenueProcessed)}</p>
-                  <p className="text-[11px] text-muted-foreground mt-2">Total revenue minus QuickServe fees.</p>
+                  <p className="text-[11px] text-muted-foreground mt-2">Total revenue minus Chillow fees.</p>
                 </div>
                 <div className="p-5 rounded-xl border border-border bg-secondary/20">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Online Revenue Processed</p>

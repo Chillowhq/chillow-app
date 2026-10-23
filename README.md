@@ -1,30 +1,36 @@
-# QuickServe QR menu
+# Chillow App
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Chillow is the connected hospitality ecosystem for guest discovery, reservations, digital menus, ordering, payments, and operations.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/neros-projects-ea791428/v0-quick-serve-qr-menu)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/nQKz1weXKzN)
+This repository contains the Next.js frontend application. It is designed to run against a separately deployed API; no production or sandbox API host is assumed to be live solely because it is documented here.
 
-## Overview
+## Local development
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+Use Node.js 24 (see `.nvmrc`), install dependencies, then start the development server:
 
-## Deployment
+```sh
+npm install
+npm run dev
+```
 
-Your project is live at:
+Copy `.env.example` to a local environment file and set only the values appropriate to the environment you are running. Do not commit credentials.
 
-**[https://vercel.com/neros-projects-ea791428/v0-quick-serve-qr-menu](https://vercel.com/neros-projects-ea791428/v0-quick-serve-qr-menu)**
+## Environment configuration
 
-## Build your app
+| Variable | Purpose | Local default |
+| --- | --- | --- |
+| `FRONTEND_BASE_URL` | Exact frontend origin used at build time to expose canonical frontend links | `http://localhost:3000` |
+| `NEXT_PUBLIC_API_BASE_URL` | Credentialed API endpoint used by the browser application | `http://localhost:5000` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key for the selected environment | `pk_test_...` |
 
-Continue building your app on:
+When the matching backend deployments are available, sandbox should use `https://sandbox.app.chillow.io` with `https://sandbox.api.chillow.io`; production should use `https://app.chillow.io` with `https://api.chillow.io`. Keep those values environment-specific and do not redirect legacy customer links until an approved cutover plan is in place.
 
-**[https://v0.app/chat/nQKz1weXKzN](https://v0.app/chat/nQKz1weXKzN)**
+## Validation
 
-## How It Works
+```sh
+npm run lint
+npm run test:components
+npm run build
+```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+Run focused workflow tests for the area being changed. Do not create live orders, reservations, payments, or customer communications as part of frontend validation.

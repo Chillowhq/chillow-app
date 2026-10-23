@@ -44,7 +44,7 @@ function businessNameInput() {
 }
 
 function slugInput() {
-  return screen.getByRole("textbox", { name: "Your QuickServe URL" }) as HTMLInputElement
+  return screen.getByRole("textbox", { name: "Your Chillow URL" }) as HTMLInputElement
 }
 
 function emailInput() {

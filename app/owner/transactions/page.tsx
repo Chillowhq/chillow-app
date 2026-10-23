@@ -1036,7 +1036,7 @@ export default function TransactionsPage() {
                   iconClass: "bg-orange-50 text-primary dark:bg-orange-950/30",
                 },
                 {
-                  label: "QuickServe Fees",
+                  label: "Chillow Fees",
                   value: summary.totalQuickServeFees,
                   copy: "Platform commission",
                   icon: CreditCard,
