@@ -1,0 +1,18 @@
+{
+  "pending": ["accept", "decline", "view"],
+  "pending_approval": ["accept", "decline", "view"],
+  "accepted_awaiting_payment": [
+    "resend_payment_link",
+    "copy_payment_link",
+    "cancel",
+    "view"
+  ],
+  "confirmed": ["check_in", "cancel", "view"],
+  "checked_in": ["check_out", "view"],
+  "checked_out": ["view", "archive"],
+  "cancelled": ["view", "archive"],
+  "expired": ["view", "archive"],
+  "declined": ["view", "archive"],
+  "completed": ["view", "archive"],
+  "no_show": ["view", "archive"]
+}

@@ -1,0 +1,175 @@
+import assert from "node:assert/strict"
+import { readFile } from "node:fs/promises"
+import test from "node:test"
+
+const page = new URL("./app/owner/service-points/page.tsx", import.meta.url)
+const roomsView = new URL("./components/service-points/HotelServicePointViews.tsx", import.meta.url)
+const roomWizard = new URL("./components/service-points/HotelRoomWizard.tsx", import.meta.url)
+const roomTypeWizard = new URL("./components/service-points/HotelRoomTypeWizard.tsx", import.meta.url)
+
+test("hotel Service Points exposes List, Rooms, Others, and Room Types without replacing the generic list", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /value: "list", label: "List"/)
+  assert.match(source, /value: "rooms", label: "Rooms"/)
+  assert.match(source, /value: "others", label: "Others"/)
+  assert.match(source, /value: "room_types", label: "Room Types"/)
+  assert.match(source, /<HotelRoomsView/)
+  assert.match(source, /<HotelRoomTypesView/)
+  assert.match(source, /<Table>/)
+  assert.match(source, /<RestaurantServicePointModal/)
+})
+
+test("Rooms grid uses authoritative ServicePoint and Room Type values with search and independent filters", async () => {
+  const source = await readFile(roomsView, "utf8")
+  assert.match(source, /point\.servicePointType === "room"/)
+  assert.match(source, /room\.label, room\.code, room\.roomType/)
+  assert.match(source, /aria-label="Filter rooms by Room Type"/)
+  assert.match(source, /aria-label="Filter rooms by status"/)
+  assert.match(source, /room\.isActive/)
+  assert.match(source, /room\.reservable !== false/)
+  assert.match(source, /room\.images\?\.\[0\] \|\| roomType\?\.images\?\.\[0\]/)
+  assert.match(source, /roomType\?\.roomSize/)
+  assert.match(source, /No rooms match your filters/)
+  assert.doesNotMatch(source, /Ocean view.*32 m².*1 King bed/s)
+})
+
+test("Add Service Point routes enabled hotel types into the canonical room or table flow", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /What kind of service point are you adding\?/)
+  assert.match(source, /capabilities\?\.servicePoints\.allowedTypes/)
+  assert.match(source, /if \(type === "room"\)/)
+  assert.match(source, /setRestaurantModalType/)
+  assert.match(source, /type === "room" \? TYPE_LABELS\[type\] : "Other"/)
+  assert.match(source, /table, poolside area, bar area, or cabana/)
+  assert.match(source, /Create Room Type/)
+})
+
+test("hotel primary action opens only the allowed creation flow for the active view", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /hotelView === "list"[\s\S]*"Add Service Point"/)
+  assert.match(source, /hotelView === "rooms"[\s\S]*"Add Room"/)
+  assert.match(source, /hotelView === "others"[\s\S]*"Add Other Service Point"/)
+  assert.match(source, /"Create Room Type"/)
+  assert.match(source, /if \(hotelView === "rooms"\) \{\s*openAddRoom\(\)/)
+  assert.match(source, /if \(hotelView === "others"\) \{\s*openAddOtherServicePoint\(\)/)
+  assert.match(source, /allowedNonRoomServicePointTypes\.length > 0/)
+  assert.match(source, /openCreateRoomType\(\)/)
+  assert.match(source, /onCreate=\{openCreateRoomType\}/)
+
+  const chooserStart = source.indexOf("<Dialog open={kindDialogOpen}")
+  const chooserEnd = source.indexOf("</Dialog>", chooserStart)
+  const chooser = source.slice(chooserStart, chooserEnd)
+  assert.ok(chooserStart >= 0 && chooserEnd > chooserStart)
+  assert.doesNotMatch(chooser, /Create Room Type/)
+})
+
+test("Add Room has Details, Settings, Review and accepts arbitrary text labels", async () => {
+  const source = await readFile(roomWizard, "utf8")
+  assert.match(source, /const STEPS = \["Details", "Settings", "Review"\]/)
+  assert.match(source, /Room 401, Garden Suite, Villa Azure/)
+  assert.match(source, /servicePointType: "room"/)
+  assert.match(source, /isActive,/)
+  assert.match(source, /reservable,/)
+  assert.match(source, /"Idempotency-Key": idempotencyKey\.current/)
+  assert.match(source, /"\/owner\/service-points"/)
+  assert.doesNotMatch(source, /businessId:/)
+})
+
+test("Room Type wizard persists all canonical template metadata and returns into Room creation", async () => {
+  const source = await readFile(roomTypeWizard, "utf8")
+  for (const step of ["Details", "Guests & Beds", "Amenities", "Photos", "Review"]) {
+    assert.match(source, new RegExp(`"${step}"`))
+  }
+  for (const field of ["roomSize", "maxGuests", "bedConfiguration", "viewType", "amenities", "images"]) {
+    assert.match(source, new RegExp(field))
+  }
+  assert.match(source, /"\/business\/room-types"/)
+  assert.match(source, /Choose a Room Type name/)
+  assert.match(source, /Create a custom Room Type/)
+  assert.match(source, /Custom Room Type name \*/)
+  assert.match(source, /apiClient\.patch/)
+  assert.match(source, /Save Room Type/)
+  assert.match(source, /Add a room now/)
+  assert.match(source, /View room types/)
+
+  const roomSource = await readFile(roomWizard, "utf8")
+  assert.match(roomSource, /setRoomTypeName\(roomType\.name\)/)
+  assert.match(roomSource, /onRoomTypeCreated\(roomType\)/)
+})
+
+test("Room Type cards exclude legacy defaults and expose edit and add-room actions", async () => {
+  const source = await readFile(roomsView, "utf8")
+  const pageSource = await readFile(page, "utf8")
+  assert.match(source, /roomType\.isDefault !== true/)
+  assert.match(source, /Edit Room Type/)
+  assert.match(source, /onEdit\(roomType\)/)
+  assert.match(source, /onAddRoom\(roomType\)/)
+  assert.match(pageSource, /onAddRoom=\{\(roomType\) => openAddRoom\(roomType\.name\)\}/)
+  assert.match(pageSource, /roomType\.isDefault !== true/)
+})
+
+test("Active Service Points Now includes room and non-room guest-device connections", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /Active Service Points Now/)
+  assert.match(source, /activeServicePointsNow/)
+  assert.match(source, /activeGuestDevicesNow/)
+  assert.match(source, /Across ServicePoint connections/)
+  assert.match(source, /visibleLiveConnections = sessionOverview\?\.tables \|\| \[\]/)
+  assert.doesNotMatch(source, /visibleLiveConnections = isHotelDashboard/)
+  assert.match(source, /This is not occupancy or a reservation count\./)
+  assert.match(source, /"\/owner\/table-sessions\/overview"/)
+})
+
+test("Others view groups only explicit canonical non-room types and keeps legacy untyped records out", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /NON_ROOM_SERVICE_POINT_TYPES = \["table", "booth", "other"\]/)
+  assert.match(source, /servicePoint\.servicePointType === "table"/)
+  assert.match(source, /servicePoint\.servicePointType === "booth"/)
+  assert.match(source, /servicePoint\.servicePointType === "other"/)
+  assert.match(source, /servicePoints\.filter\(isHotelOtherServicePoint\)/)
+  assert.doesNotMatch(source, /servicePointType !== "room"/)
+  assert.match(source, /requestedView === "list" \|\| requestedView === "rooms" \|\| requestedView === "others"/)
+  assert.match(source, /isHotelDashboard && hotelView !== "others" && type !== "room"/)
+  assert.match(source, /\? "Others"/)
+})
+
+test("Others view reuses the canonical list actions and scopes its filtering and count", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /servicePointsForCurrentList\.filter\(\(servicePoint\)/)
+  assert.match(source, /Showing \{filteredServicePoints\.length\} of \{servicePointsForCurrentList\.length\}/)
+  assert.match(source, /hotelView === "others" \? <TableHead>Type<\/TableHead>/)
+  assert.match(source, /renderActions\(servicePoint\)/)
+  assert.match(source, /renderActions\(servicePoint, true\)/)
+})
+
+test("hotel live activity uses debounced SSE invalidation without periodic polling", async () => {
+  const source = await readFile(page, "utf8")
+  assert.match(source, /useEventSource\(servicePointsSseUrl, servicePointsSseHandlers/)
+  assert.match(source, /permission=\$\{MANAGER_PERMISSIONS\.SERVICE_POINTS_VIEW\}/)
+  assert.match(source, /service_points_changed:/)
+  assert.match(source, /SERVICE_POINTS_REFRESH_DEBOUNCE_MS = 350/)
+  assert.match(source, /pendingConfigurationRefreshRef/)
+  assert.match(source, /loadSessionOverview\(\{ showLoading: false \}\)/)
+  assert.match(source, /requests\.push\(loadServicePoints\(\{ showLoading: false \}\)\)/)
+  assert.match(source, /onReconnect: \(\) => scheduleAuthoritativeRefresh\("configuration"\)/)
+  assert.match(source, /window\.addEventListener\("focus", recoverAuthoritativeState\)/)
+  assert.match(source, /document\.addEventListener\("visibilitychange", refreshWhenVisible\)/)
+  assert.match(source, /sessionOverview\?\.nextActivityExpiryAt/)
+  assert.match(source, /expiresAt - Date\.now\(\) \+ 250/)
+  assert.match(source, /if \(!businessId \|\| !isHotelDashboard\) return/)
+  assert.doesNotMatch(source, /setInterval/)
+  assert.doesNotMatch(source, /10_000/)
+})
+
+test("Room views and multi-step dialogs include desktop, tablet, and mobile layouts", async () => {
+  const viewSource = await readFile(roomsView, "utf8")
+  const roomSource = await readFile(roomWizard, "utf8")
+  const typeSource = await readFile(roomTypeWizard, "utf8")
+  assert.match(viewSource, /sm:grid-cols-2/)
+  assert.match(viewSource, /2xl:grid-cols-3/)
+  assert.match(viewSource, /lg:grid-cols-/)
+  assert.match(roomSource, /100dvh/)
+  assert.match(roomSource, /overflow-y-auto/)
+  assert.match(typeSource, /100dvh/)
+  assert.match(typeSource, /overflow-y-auto/)
+})
