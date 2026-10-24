@@ -31,8 +31,8 @@ export const metadata: Metadata = {
   },
   generator: "",
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
+    icon: "/chillow-mark.png",
+    apple: "/chillow-mark.png",
   },
 }
 

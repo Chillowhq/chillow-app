@@ -70,7 +70,7 @@ function ResetPasswordForm() {
       {/* Brand Logo */}
       <div className="flex items-center gap-4 mb-10 transition-all">
           <div className="w-16 h-16 rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-black/20 overflow-hidden bg-white">
-              <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
+              <img src="/chillow-mark.png" alt="Chillow logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h1 className="font-black text-4xl tracking-tight leading-none text-[#0f172a]">

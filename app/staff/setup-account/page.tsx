@@ -91,7 +91,7 @@ function StaffSetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform transition-all duration-500 animate-pulse overflow-hidden">
-                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
+                <img src="/chillow-mark.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
                 <span className="text-[#2B304C]">Chillow</span> Staff
@@ -107,7 +107,7 @@ function StaffSetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
+                <img src="/chillow-mark.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
                 <span className="text-[#2B304C]">Chillow</span>
@@ -141,7 +141,7 @@ function StaffSetupAccountContent() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="flex items-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
+                <img src="/chillow-mark.png" alt="Chillow" className="w-full h-full object-contain" />
             </div>
             <h1 className="font-black text-3xl tracking-tight">
                 <span className="text-[#2B304C]">Chillow</span>
@@ -174,7 +174,7 @@ function StaffSetupAccountContent() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] p-4">
       <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-              <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
+              <img src="/chillow-mark.png" alt="Chillow" className="w-full h-full object-contain" />
           </div>
           <h1 className="font-black text-3xl tracking-tight">
               <span className="text-[#2B304C]">Chillow</span> Staff

@@ -353,17 +353,16 @@ function Sidebar({
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="p-5 border-b border-border">
-        <Link href={portalHome} className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-            <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
+      <div className="border-b border-border p-5">
+        <Link href={portalHome} className="flex items-center gap-3.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background p-1 shadow-sm">
+            <img src="/chillow-mark.png" alt="Chillow logo" className="h-full w-full object-contain" />
           </div>
-          <div>
-            <h1 className="font-black text-base tracking-tight leading-none">
+          <div className="flex min-w-0 flex-col justify-center gap-1">
+            <h1 className="font-black text-lg leading-none tracking-tight">
               <span className="text-[#2B304C]">Chillow</span>
-      
             </h1>
-            <p className="text-[10px] text-muted-foreground mt-0.5">{user.role === "manager" ? "Management Portal" : "Owner Portal"}</p>
+            <p className="text-[11px] leading-none text-muted-foreground">{user.role === "manager" ? "Management Portal" : "Owner Portal"}</p>
           </div>
         </Link>
       </div>
@@ -473,11 +472,11 @@ function OwnerLayoutInner({
         {/* Mobile Header */}
         <header className="lg:hidden sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
           <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
-                <img src="/icon.png" alt="Chillow logo" className="w-full h-full object-contain" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/70 bg-background p-1 shadow-sm">
+                <img src="/chillow-mark.png" alt="Chillow logo" className="h-full w-full object-contain" />
               </div>
-              <span className="font-bold text-sm">Chillow</span>
+              <span className="font-black text-base tracking-tight">Chillow</span>
             </div>
             <div className="flex items-center gap-1">
               <OwnerNotificationCenter variant="mobile" controller={notifications} />

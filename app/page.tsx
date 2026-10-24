@@ -20,7 +20,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-[#EA601A] to-[#ff8c42] rounded-3xl blur-xl opacity-30 animate-pulse" />
             <img
-              src="/icon.png"
+              src="/chillow-mark.png"
               alt="Chillow"
               className="w-24 h-24 rounded-3xl shadow-2xl object-contain relative z-10 ring-4 ring-white/10"
             />

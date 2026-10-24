@@ -44,7 +44,7 @@ export function OnboardingLayout({ currentStep, children }: OnboardingLayoutProp
       <header className="flex items-center justify-between px-6 py-4 lg:px-10 border-b border-white/5 backdrop-blur-sm bg-black/10">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-[#EA601A]/30 flex items-center justify-center bg-white">
-            <img src="/icon.png" alt="Chillow" className="w-full h-full object-contain" />
+            <img src="/chillow-mark.png" alt="Chillow" className="w-full h-full object-contain" />
           </div>
           <span className="font-black text-white text-lg tracking-tight">Chillow</span>
         </div>
