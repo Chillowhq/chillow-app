@@ -31,8 +31,18 @@ export interface SetupProgress {
   totalRequiredCount: number
   completedCoreCount: number
   totalCoreCount: number
+  completedRecommendedCount?: number
+  totalRecommendedCount?: number
   progressPercent: number
   complete: boolean
+  completionMessage?: string
+  bookingReadiness?: {
+    operationalSetupComplete: boolean
+    onlineReservationsEnabled: boolean
+    publicStayReservationsEnabled: boolean
+    publicBookingEligible: boolean
+    blockers: string[]
+  } | null
   dismissed: boolean
   counts: Record<string, number>
 }
@@ -54,6 +64,8 @@ export default function GuidedSetupChecklist({
 }: GuidedSetupChecklistProps) {
   if (progress.dismissed) return null
 
+  const previewTask = progress.tasks.find((task) => task.id === "booking_preview")
+
   if (progress.complete) {
     return (
       <section className="bg-card border border-emerald-200 dark:border-emerald-900/60 rounded-2xl p-6 shadow-sm">
@@ -65,13 +77,16 @@ export default function GuidedSetupChecklist({
             <div>
               <h2 className="text-lg font-black text-foreground">Your Chillow workspace is ready</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                You have completed all core setup requirements. Customers can now place orders or reservations.
+                {progress.completionMessage || "You have completed all required setup requirements."}
               </p>
             </div>
           </div>
-          <Button onClick={onDismiss} disabled={dismissing} className="rounded-xl font-bold w-full sm:w-fit bg-emerald-600 hover:bg-emerald-700 text-white">
-            {dismissing ? "Dismissing..." : "Finish Setup"}
-          </Button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            {previewTask ? <Button asChild variant="outline" className="rounded-xl font-bold"><Link href={previewTask.href}>Preview booking page</Link></Button> : null}
+            <Button onClick={onDismiss} disabled={dismissing} className="rounded-xl font-bold w-full sm:w-fit bg-emerald-600 hover:bg-emerald-700 text-white">
+              {dismissing ? "Dismissing..." : "Finish Setup"}
+            </Button>
+          </div>
         </div>
       </section>
     )
@@ -79,12 +94,8 @@ export default function GuidedSetupChecklist({
 
   const progressPercent = Math.round(Math.max(0, Math.min(100, Number(progress.progressPercent) || 0)))
 
-  // All tasks in the journey are considered part of the core setup sequence visually
-  const coreTasks = progress.tasks
-  const optionalTasks: SetupTask[] = []
-
-  // Don't clutter the UI with default completed core tasks unless they have other pending ones?
-  // Actually, we should just show them clearly but focus on the next action.
+  const requiredTasks = progress.tasks.filter((task) => task.classification === "required")
+  const optionalTasks = progress.tasks.filter((task) => task.classification !== "required")
 
   return (
     <section className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
@@ -136,7 +147,7 @@ export default function GuidedSetupChecklist({
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPercent}%` }} />
             </div>
             <p className="text-[11px] font-bold text-muted-foreground mt-1 text-right">
-              {progress.completedCoreCount}/{progress.totalCoreCount} core requirements
+              {progress.completedRequiredCount}/{progress.totalRequiredCount} required tasks
             </p>
           </div>
           <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", !collapsed && "rotate-180")} />
@@ -148,7 +159,7 @@ export default function GuidedSetupChecklist({
           {progress.nextAction && (
              <div className="mb-8 p-4 rounded-xl border-2 border-primary/20 bg-primary/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                   <span className="text-[10px] uppercase font-bold tracking-wider text-primary mb-1 block">Core Setup • Next Step</span>
+                   <span className="text-[10px] uppercase font-bold tracking-wider text-primary mb-1 block">Required setup • Next step</span>
                    <h3 className="font-black text-foreground text-lg">{progress.nextAction.title}</h3>
                    <p className="text-sm text-muted-foreground">{progress.nextAction.description}</p>
                 </div>
@@ -161,14 +172,27 @@ export default function GuidedSetupChecklist({
              </div>
           )}
 
-          {/* Core Tasks */}
+          {progress.bookingReadiness ? (
+            <div className="mb-6 rounded-xl border border-border bg-secondary/20 p-4">
+              <h3 className="text-sm font-bold text-foreground">Public booking status</h3>
+              <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
+                <p>Operational setup: <span className="font-semibold text-foreground">{progress.bookingReadiness.operationalSetupComplete ? "Complete" : "In progress"}</span></p>
+                <p>Online reservations: <span className="font-semibold text-foreground">{progress.bookingReadiness.onlineReservationsEnabled ? "Enabled" : "Disabled"}</span></p>
+                <p>Public stay booking: <span className="font-semibold text-foreground">{progress.bookingReadiness.publicStayReservationsEnabled ? "Enabled" : "Disabled"}</span></p>
+                <p>Guest booking: <span className="font-semibold text-foreground">{progress.bookingReadiness.publicBookingEligible ? "Eligible" : "Not yet eligible"}</span></p>
+              </div>
+              {progress.bookingReadiness.blockers.length > 0 ? <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted-foreground">{progress.bookingReadiness.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : null}
+            </div>
+          ) : null}
+
+          {/* Required Tasks */}
           <div className="mb-6">
             <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-primary" />
-              Core Requirements
+              Required setup
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {coreTasks.map((task) => {
+              {requiredTasks.map((task) => {
                 const done = task.completed
                 return (
                   <div
@@ -205,7 +229,7 @@ export default function GuidedSetupChecklist({
           {optionalTasks.length > 0 && (
             <div className="mt-8 pt-6 border-t border-border">
               <h3 className="text-sm font-bold text-foreground mb-3">Recommended Next Steps</h3>
-              <p className="text-xs text-muted-foreground mb-4 -mt-1">These tasks help you get the most out of Chillow but are not required to take orders.</p>
+              <p className="text-xs text-muted-foreground mb-4 -mt-1">These tasks help you get the most out of Chillow but do not block setup completion.</p>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {optionalTasks.map((task) => {

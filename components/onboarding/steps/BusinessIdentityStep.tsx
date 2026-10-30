@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Building2, Loader2, ArrowRight, ArrowLeft, RefreshCw, CheckCircle2, XCircle } from "lucide-react"
@@ -11,18 +11,17 @@ import { Field } from "@/components/forms/Field"
 import { FormNotice } from "@/components/forms/FormNotice"
 import { findCountryMetadata } from "@/lib/country-metadata"
 import {
-  businessIdentitySchema,
+  fetchOnboardingVenueTypeCatalog,
+  getOnboardingVenueTypeIds,
+  type OnboardingVenueTypeCatalog,
+} from "@/lib/onboarding-venue-types"
+import {
+  createBusinessIdentitySchema,
   getBusinessIdentityDefaultValues,
   slugifyBusinessName,
   toBusinessIdentityPayload,
   type BusinessIdentityFormValues,
 } from "./BusinessIdentityStep.validation"
-
-const BUSINESS_TYPES = [
-  { value: "restaurant", label: "Restaurant", emoji: "Ã°Å¸ÂÂ½Ã¯Â¸Â" },
-  { value: "bar_lounge", label: "Bar & Lounge", emoji: "Ã°Å¸ÂÂ¸" },
-  { value: "hotel", label: "Hotel / Apartment", emoji: "Ã°Å¸ÂÂ¨" },
-]
 
 const fieldClassName = "space-y-1.5 [&_label]:block [&_label]:text-sm [&_label]:font-semibold [&_label]:text-white/70"
 const inputClassName = "w-full h-12 px-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#EA601A]/50 focus:border-[#EA601A]/50 transition-all hover:border-white/20"
@@ -41,8 +40,28 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
   const [slugManual, setSlugManual] = useState(false)
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle")
   const [formError, setFormError] = useState<string | null>(null)
+  const [venueCatalog, setVenueCatalog] = useState<OnboardingVenueTypeCatalog | null>(null)
+  const [venueCatalogError, setVenueCatalogError] = useState<string | null>(null)
+  const [venueCatalogLoading, setVenueCatalogLoading] = useState(true)
   const submissionInFlight = useRef(false)
   const phoneCountry = findCountryMetadata(initial?.countryCode || initial?.country)?.countryCode
+  const supportedVenueTypeIds = useMemo(() => getOnboardingVenueTypeIds(venueCatalog), [venueCatalog])
+  const validationSchema = useMemo(
+    () => createBusinessIdentitySchema(supportedVenueTypeIds),
+    [supportedVenueTypeIds],
+  )
+  const loadVenueCatalog = useCallback(async () => {
+    setVenueCatalogLoading(true)
+    setVenueCatalogError(null)
+    try {
+      setVenueCatalog(await fetchOnboardingVenueTypeCatalog())
+    } catch (error) {
+      setVenueCatalog(null)
+      setVenueCatalogError(error instanceof Error ? error.message : "Business types could not be loaded. Try again.")
+    } finally {
+      setVenueCatalogLoading(false)
+    }
+  }, [])
   const {
     control,
     register,
@@ -51,7 +70,7 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<BusinessIdentityFormValues>({
-    resolver: zodResolver(businessIdentitySchema),
+    resolver: zodResolver(validationSchema),
     mode: "onSubmit",
     reValidateMode: "onChange",
     shouldFocusError: true,
@@ -59,8 +78,19 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
   })
   const name = useWatch({ control, name: "name" })
   const slug = useWatch({ control, name: "slug" })
-  const businessType = useWatch({ control, name: "businessType" })
+  const venueType = useWatch({ control, name: "venueType" })
+  const isCatalogReady = !venueCatalogLoading && !venueCatalogError && supportedVenueTypeIds.length > 0
   const isPending = isLoading || isSubmitting
+
+  useEffect(() => {
+    void loadVenueCatalog()
+  }, [loadVenueCatalog])
+
+  useEffect(() => {
+    if (venueType && isCatalogReady && !supportedVenueTypeIds.includes(venueType)) {
+      setValue("venueType", "", { shouldDirty: true })
+    }
+  }, [isCatalogReady, setValue, supportedVenueTypeIds, venueType])
 
   useEffect(() => {
     if (!slugManual && name) {
@@ -85,7 +115,7 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
   }, [slug])
 
   const handleBusinessIdentitySubmit = async (values: BusinessIdentityFormValues) => {
-    if (isLoading || submissionInFlight.current) return
+    if (!isCatalogReady || isLoading || submissionInFlight.current) return
 
     submissionInFlight.current = true
     setFormError(null)
@@ -123,35 +153,57 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
         onSubmit={(event) => void handleSubmit(handleBusinessIdentitySubmit)(event)}
         className="space-y-4"
         noValidate
-        aria-busy={isPending}
+        aria-busy={isPending || venueCatalogLoading}
       >
         <div>
-          <p id="ob-business-type-label" className="block text-sm font-semibold text-white/70 mb-2">
-            Business Type<span className="text-[#EA601A] ml-0.5" aria-hidden="true">*</span>
+          <p id="ob-venue-type-label" className="block text-sm font-semibold text-white/70 mb-1">
+            What kind of business do you operate?<span className="text-[#EA601A] ml-0.5" aria-hidden="true">*</span>
           </p>
-          <div role="group" aria-labelledby="ob-business-type-label" className="grid grid-cols-3 gap-2">
-            {BUSINESS_TYPES.map((type) => (
-              <button
-                key={type.value}
-                type="button"
-                aria-pressed={businessType === type.value}
-                onClick={() => {
-                  setValue("businessType", type.value, { shouldDirty: true })
-                  setFormError(null)
-                }}
-                className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl border text-center transition-all ${
-                  businessType === type.value
-                    ? "bg-[#EA601A]/15 border-[#EA601A]/50 shadow-lg shadow-[#EA601A]/10"
-                    : "bg-white/3 border-white/8 hover:border-white/20 hover:bg-white/5"
-                }`}
-              >
-                <span className="text-xl">{type.emoji}</span>
-                <span className={`text-xs font-bold leading-tight ${businessType === type.value ? "text-[#EA601A]" : "text-white/50"}`}>
-                  {type.label}
-                </span>
+          <p className="mb-3 text-xs leading-relaxed text-white/35">
+            Choose the type that best describes your business. Chillow will tailor your workspace accordingly.
+          </p>
+          {venueCatalogLoading ? (
+            <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/3 px-4 py-3 text-sm text-white/45">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading available business types…
+            </div>
+          ) : venueCatalogError ? (
+            <div role="alert" className="rounded-2xl border border-red-400/25 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+              <p>{venueCatalogError}</p>
+              <button type="button" onClick={() => void loadVenueCatalog()} className="mt-2 inline-flex items-center gap-1 font-semibold text-[#ff9b6b] hover:text-white">
+                <RefreshCw className="h-3.5 w-3.5" /> Try again
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-3" role="radiogroup" aria-labelledby="ob-venue-type-label">
+              {venueCatalog?.groups.map((group) => (
+                <section key={group.id} aria-label={group.label}>
+                  <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-white/35">{group.label}</h2>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {group.venueTypes.map((type) => (
+                      <button
+                        key={type.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={venueType === type.id}
+                        onClick={() => {
+                          setValue("venueType", type.id, { shouldDirty: true, shouldValidate: true })
+                          setFormError(null)
+                        }}
+                        className={`min-h-12 rounded-2xl border px-3 py-2.5 text-left text-sm font-bold transition-all focus:outline-none focus:ring-2 focus:ring-[#EA601A]/60 ${
+                          venueType === type.id
+                            ? "border-[#EA601A]/60 bg-[#EA601A]/15 text-[#ff9b6b] shadow-lg shadow-[#EA601A]/10"
+                            : "border-white/10 bg-white/3 text-white/60 hover:border-white/25 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+          {errors.venueType?.message ? <p className="mt-2 text-xs text-red-300">{errors.venueType.message}</p> : null}
         </div>
 
         <Field id="ob-biz-name" label="Business Name" required error={errors.name?.message} className={fieldClassName}>
@@ -291,7 +343,7 @@ export function BusinessIdentityStep({ initial, ownerEmail, onComplete, onBack, 
           </button>
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !isCatalogReady}
             className="flex-1 h-13 py-3.5 rounded-2xl bg-gradient-to-r from-[#EA601A] to-[#ff8c42] hover:from-[#D45618] hover:to-[#EA601A] text-white font-bold text-base shadow-xl shadow-[#EA601A]/25 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 group"
           >
             {isPending ? (

@@ -21,6 +21,8 @@ export type BusinessCapabilities = {
   version: number
   identity: {
     businessType: string
+    venueType: string | null
+    venueLabel: string | null
     shell: BusinessShell
   }
   visibleModules: BusinessModule[]
@@ -56,6 +58,7 @@ export type BusinessCapabilities = {
 
 export type BusinessCapabilityContract = {
   businessType?: string
+  venueType?: string | null
   modules?: BusinessModule[]
   capabilities?: BusinessCapabilities
 }

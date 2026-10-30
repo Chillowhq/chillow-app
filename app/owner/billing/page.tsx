@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, type KeyboardEvent } from "react"
 import {
   CreditCard,
   Wallet,
@@ -35,11 +35,12 @@ import { toast } from "sonner"
 import { format } from "date-fns"
 import AddPaymentMethodModal from "@/components/owner/billing/AddPaymentMethodModal"
 import ManagePlanModal from "@/components/owner/billing/ManagePlanModal"
+import OfflineCommissionsSection, { OfflineCommissionsSkeleton, type OfflineCommissionBilling } from "@/components/owner/billing/OfflineCommissionsSection"
 import { useSetupProgress } from "@/contexts/SetupProgressContext"
 import { formatMinorCurrency } from "@/lib/localization"
 
 type BillingTab = "billing" | "payouts" | "performance"
-type BillingResource = "billing" | "commission" | "invoices" | "plans" | "payout" | "feeSettings"
+type BillingResource = "billing" | "commission" | "offlineCommissions" | "invoices" | "plans" | "payout" | "feeSettings"
 
 const billingTabs: Array<{ id: BillingTab; label: string; question: string }> = [
   { id: "billing", label: "Billing", question: "How much do I owe Chillow?" },
@@ -50,6 +51,9 @@ const billingTabs: Array<{ id: BillingTab; label: string; question: string }> = 
 const isBillingTab = (value: string | null): value is BillingTab => (
   Boolean(value && billingTabs.some((tab) => tab.id === value))
 )
+
+const billingTabId = (tab: BillingTab) => `owner-billing-tab-${tab}`
+const billingPanelId = (tab: BillingTab) => `owner-billing-panel-${tab}`
 
 function BillingCardSkeleton({
   label,
@@ -133,6 +137,7 @@ export default function BillingPage() {
   const [resourceLoading, setResourceLoading] = useState<Record<BillingResource, boolean>>({
     billing: true,
     commission: true,
+    offlineCommissions: true,
     invoices: true,
     plans: true,
     payout: true,
@@ -170,6 +175,9 @@ export default function BillingPage() {
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   // Sections 6-7: Analytics & Invoices
   const [commission, setCommission] = useState<any>(null)
+  const [offlineCommissions, setOfflineCommissions] = useState<OfflineCommissionBilling | null>(null)
+  const [offlineCommissionPage, setOfflineCommissionPage] = useState(1)
+  const offlineCommissionRequestId = useRef(0)
   const [invoices, setInvoices] = useState<any[]>([])
   const [linkedInvoiceId, setLinkedInvoiceId] = useState<string | null>(null)
   const [payoutSummary, setPayoutSummary] = useState<any>(null)
@@ -211,8 +219,12 @@ export default function BillingPage() {
 
   useEffect(() => {
     if (businessId) {
+      setOfflineCommissionPage(1)
+      setOfflineCommissions(null)
+      setResourceLoading((current) => ({ ...current, offlineCommissions: true }))
       fetchStripeStatus()
       fetchBillingData()
+      fetchOfflineCommissionPage(1)
       fetchPlatformFeeSettings()
     }
   }, [businessId])
@@ -275,6 +287,30 @@ export default function BillingPage() {
     }
   }
 
+  const fetchOfflineCommissionPage = async (page: number) => {
+    const requestId = ++offlineCommissionRequestId.current
+    try {
+      setResourceErrors((current) => ({ ...current, offlineCommissions: false }))
+      setResourceLoading((current) => ({ ...current, offlineCommissions: true }))
+      const response = await apiClient.get("/owner/billing/offline-commissions", {
+        params: { page },
+      })
+      if (requestId !== offlineCommissionRequestId.current) return
+
+      setOfflineCommissions(response.data)
+      setOfflineCommissionPage(Number(response.data?.pagination?.page) || page)
+    } catch (error) {
+      if (requestId !== offlineCommissionRequestId.current) return
+
+      setResourceErrors((current) => ({ ...current, offlineCommissions: true }))
+      console.error("Failed to fetch offline commission activity", error)
+    } finally {
+      if (requestId === offlineCommissionRequestId.current) {
+        setResourceLoading((current) => ({ ...current, offlineCommissions: false }))
+      }
+    }
+  }
+
   const fetchPlatformFeeSettings = async () => {
     try {
       setResourceErrors((current) => ({ ...current, feeSettings: false }))
@@ -303,6 +339,11 @@ export default function BillingPage() {
       payout: true,
     }))
     fetchBillingData()
+    fetchOfflineCommissionPage(offlineCommissionPage)
+  }
+
+  const retryOfflineCommissionActivity = () => {
+    fetchOfflineCommissionPage(offlineCommissionPage)
   }
 
   const retryPlatformFeeSettings = () => {
@@ -383,6 +424,35 @@ export default function BillingPage() {
 
     const query = params.toString()
     window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`)
+  }
+
+  const handleBillingTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, currentTab: BillingTab) => {
+    const currentIndex = billingTabs.findIndex((tab) => tab.id === currentTab)
+    let nextIndex: number | null = null
+
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        nextIndex = (currentIndex + 1) % billingTabs.length
+        break
+      case "ArrowLeft":
+      case "ArrowUp":
+        nextIndex = (currentIndex - 1 + billingTabs.length) % billingTabs.length
+        break
+      case "Home":
+        nextIndex = 0
+        break
+      case "End":
+        nextIndex = billingTabs.length - 1
+        break
+      default:
+        return
+    }
+
+    event.preventDefault()
+    const nextTab = billingTabs[nextIndex].id
+    handleTabChange(nextTab)
+    window.requestAnimationFrame(() => document.getElementById(billingTabId(nextTab))?.focus())
   }
 
 
@@ -548,6 +618,7 @@ export default function BillingPage() {
             onClick={() => {
               fetchStripeStatus()
               fetchBillingData()
+              fetchOfflineCommissionPage(offlineCommissionPage)
             }}
             disabled={isLoading || isCheckingStripeStatus}
             className="flex items-center gap-2 font-bold bg-secondary/50 hover:bg-secondary border-border rounded-xl"
@@ -571,13 +642,19 @@ export default function BillingPage() {
           </div>
         )}
         <div className="flex flex-col gap-3 border-b border-border pb-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Billing workspace sections">
             {billingTabs.map((tab) => (
               <button
                 key={tab.id}
+                id={billingTabId(tab.id)}
                 type="button"
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={billingPanelId(tab.id)}
+                tabIndex={activeTab === tab.id ? 0 : -1}
                 onClick={() => handleTabChange(tab.id)}
-                className={`px-4 py-2 rounded-xl text-sm font-black transition-colors ${activeTab === tab.id
+                onKeyDown={(event) => handleBillingTabKeyDown(event, tab.id)}
+                className={`rounded-xl px-4 py-2 text-sm font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${activeTab === tab.id
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-card text-muted-foreground border border-border hover:text-foreground"
                 }`}
@@ -586,13 +663,13 @@ export default function BillingPage() {
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground font-medium">
+          <p className="text-xs text-muted-foreground font-medium" aria-live="polite">
             {billingTabs.find((tab) => tab.id === activeTab)?.question}
           </p>
         </div>
 
         {activeTab === "billing" && (
-          <div className="space-y-8">
+          <div id={billingPanelId("billing")} role="tabpanel" aria-labelledby={billingTabId("billing")} tabIndex={0} className="space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
             {hasBillingOverviewError ? (
               <BillingSectionError label="Current billing cycle could not be loaded" onRetry={retryBillingData} />
             ) : isBillingOverviewLoading ? (
@@ -659,6 +736,19 @@ export default function BillingPage() {
                 </p>
               </div>
             </section>
+            )}
+            {!offlineCommissions && resourceErrors.offlineCommissions ? (
+              <BillingSectionError label="Offline commission details could not be loaded" onRetry={retryBillingData} />
+            ) : !offlineCommissions ? (
+              <OfflineCommissionsSkeleton />
+            ) : (
+              <OfflineCommissionsSection
+                data={offlineCommissions}
+                isActivityLoading={resourceLoading.offlineCommissions}
+                activityError={Boolean(resourceErrors.offlineCommissions)}
+                onRetryActivity={retryOfflineCommissionActivity}
+                onActivityPageChange={fetchOfflineCommissionPage}
+              />
             )}
             {hasBillingOverviewError ? (
               <BillingSectionError label="Current subscription could not be loaded" onRetry={retryBillingData} />
@@ -855,7 +945,7 @@ export default function BillingPage() {
           <div className="p-5 border-b border-border flex items-center justify-between bg-secondary/30">
             <div>
               <h2 className="text-lg font-black text-foreground">Invoice History</h2>
-              <p className="text-xs text-muted-foreground font-medium">Past platform commission invoices</p>
+              <p className="text-xs text-muted-foreground font-medium">Subscription and platform billing records issued to your business.</p>
             </div>
           </div>
 
@@ -958,7 +1048,7 @@ export default function BillingPage() {
         )}
 
         {activeTab === "payouts" && (
-          <div className="space-y-8">
+        <div id={billingPanelId("payouts")} role="tabpanel" aria-labelledby={billingTabId("payouts")} tabIndex={0} className="space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
         {stripeStatusError ? (
           <BillingSectionError label="Online payment connection could not be loaded" onRetry={retryStripeStatus} />
         ) : !hasCheckedStripeStatus ? (
@@ -1095,7 +1185,7 @@ export default function BillingPage() {
                 <div>
                   <h2 className="text-lg font-black text-foreground flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-primary" />
-                    Payment Method
+                    Offline Payment Method
                   </h2>
                   <p className="text-xs text-muted-foreground font-medium">Used for monthly commission invoices</p>
                 </div>
@@ -1123,16 +1213,16 @@ export default function BillingPage() {
 
               {billingInfo?.billingStatus === 'active' && billingInfo?.paymentMethodLast4 ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-secondary/30 border border-border rounded-xl">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between gap-3 p-4 bg-secondary/30 border border-border rounded-xl">
+                    <div className="flex min-w-0 items-center gap-4">
                       <div className="w-12 h-8 bg-background border border-border rounded-md flex items-center justify-center shadow-sm">
                         <CreditCard className="w-5 h-5 text-muted-foreground" />
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground capitalize">
+                      <div className="min-w-0">
+                        <p className="break-words text-sm font-bold text-foreground capitalize">
                           {billingInfo.paymentMethodBrand} **** {billingInfo.paymentMethodLast4}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="break-words text-xs text-muted-foreground">
                           Expires {billingInfo.paymentMethodExpMonth}/{billingInfo.paymentMethodExpYear}
                         </p>
                       </div>
@@ -1222,7 +1312,7 @@ export default function BillingPage() {
         )}
 
         {activeTab === "performance" && (
-          <div className="space-y-8">
+        <div id={billingPanelId("performance")} role="tabpanel" aria-labelledby={billingTabId("performance")} tabIndex={0} className="space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
             {hasPerformanceError ? (
               <BillingSectionError label="Revenue performance could not be loaded" onRetry={retryBillingData} />
             ) : isPerformanceLoading ? (

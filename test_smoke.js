@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- This standalone smoke script runs directly under CommonJS Node. */
 const https = require('https');
 const http = require('http');
 

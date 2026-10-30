@@ -15,6 +15,7 @@ export interface BusinessData {
   name?: string
   displayName?: string
   businessType?: string
+  venueType?: string
   slug?: string
   contactEmail?: string
   phoneNumber?: string
@@ -48,6 +49,27 @@ export interface OnboardingSessionData {
 }
 
 const SESSION_STORAGE_KEY = "qs_onboarding_session"
+
+// A selected venue type is authoritative for new onboarding sessions. Never
+// resend a legacy shell alongside it: the backend derives that value and its
+// operational modules, then returns the canonical session data.
+export function withoutConflictingLegacyBusinessType(businessData: BusinessData): BusinessData {
+  const normalized = { ...businessData }
+  if (typeof normalized.venueType === "string" && normalized.venueType) {
+    delete normalized.businessType
+  }
+  return normalized
+}
+
+export function mergeOnboardingBusinessData(
+  currentBusinessData: BusinessData | undefined,
+  nextBusinessData: BusinessData,
+): BusinessData {
+  return withoutConflictingLegacyBusinessType({
+    ...(currentBusinessData ?? {}),
+    ...nextBusinessData,
+  })
+}
 
 export function useOnboarding() {
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -173,7 +195,7 @@ export function useOnboarding() {
       setIsLoading(true)
       setError(null)
       try {
-        const mergedBusinessData = { ...(sessionData.businessData ?? {}), ...businessData }
+        const mergedBusinessData = mergeOnboardingBusinessData(sessionData.businessData, businessData)
         const selectedPlan = mergedBusinessData.plan ?? mergedBusinessData.currentPlan
         const businessDataToSave = selectedPlan
           ? { ...mergedBusinessData, plan: selectedPlan, currentPlan: selectedPlan }
@@ -215,10 +237,10 @@ export function useOnboarding() {
     const id = sessionId || getPersistedSessionId()
     if (!id) return { success: false, message: "No active session" }
 
-      setIsLoading(true)
-      setError(null)
-      try {
-      const businessData = sessionData.businessData ?? {}
+    setIsLoading(true)
+    setError(null)
+    try {
+      const businessData = withoutConflictingLegacyBusinessType(sessionData.businessData ?? {})
       const selectedPlan = businessData.plan ?? businessData.currentPlan
       const businessDataToComplete = selectedPlan
         ? { ...businessData, plan: selectedPlan, currentPlan: selectedPlan }

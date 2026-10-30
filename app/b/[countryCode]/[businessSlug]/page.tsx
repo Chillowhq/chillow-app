@@ -7,6 +7,10 @@ import { Calendar, Truck, PartyPopper, UtensilsCrossed, Gift, MapPin, Clock } fr
 import { PublicHubSkeleton } from "@/components/customer-loading-skeletons";
 import apiClient from "@/lib/axios-config";
 import { isRestaurantOpen, getNextOpening } from "@/lib/operating-hours";
+import {
+  parsePublicReservationModes,
+  type PublicReservationMode,
+} from "@/lib/public-reservation-mode";
 
 export default function PublicHubPage() {
   const params = useParams();
@@ -15,32 +19,55 @@ export default function PublicHubPage() {
   const businessSlug = params.businessSlug as string;
 
   const [business, setBusiness] = useState<any>(null);
+  const [publicReservationModes, setPublicReservationModes] = useState<PublicReservationMode[] | null>(null);
+  const [reservationOptionsError, setReservationOptionsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!businessSlug) return;
+    if (!businessSlug || !countryCode) return;
+    let isActive = true;
+    setIsLoading(true);
+    setBusiness(null);
     
     const fetchBusiness = async () => {
       try {
+        setError(null);
+        setPublicReservationModes(null);
+        setReservationOptionsError(false);
         const res = await apiClient.get(`/public/business/${countryCode}/${businessSlug}`);
+        if (!isActive) return;
         if (res.data.redirectUrl) {
           router.replace(res.data.redirectUrl);
           return;
         }
         setBusiness(res.data);
+
+        try {
+          const optionsResponse = await apiClient.get(`/public/reservation-options/${countryCode}/${businessSlug}`);
+          if (!isActive) return;
+          setPublicReservationModes(parsePublicReservationModes(optionsResponse.data?.modes));
+        } catch {
+          if (!isActive) return;
+          setPublicReservationModes([]);
+          setReservationOptionsError(true);
+        }
       } catch (err: any) {
+        if (!isActive) return;
         if (err.response?.status === 300) {
           setError(err.response.data.error || "Multiple businesses found. Please use the country-specific link.");
         } else {
           setError(err.response?.data?.error || "Failed to load business profile.");
         }
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
     fetchBusiness();
-  }, [businessSlug]);
+    return () => {
+      isActive = false;
+    };
+  }, [businessSlug, countryCode, router]);
 
   if (isLoading) {
     return <PublicHubSkeleton />;
@@ -63,7 +90,7 @@ export default function PublicHubPage() {
 
   const primaryColor = branding?.primaryColor || "#EA601A";
   const coverImage = branding?.coverImageUrl || "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1200&q=80";
-  const reservationsEnabled = business.settings?.reservationsEnabled !== false;
+  const hasPublicReservations = publicReservationModes !== null && publicReservationModes.length > 0;
 
   return (
     <main className="min-h-screen bg-background pb-12" style={{ "--theme-primary": primaryColor } as React.CSSProperties}>
@@ -133,7 +160,7 @@ export default function PublicHubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
           
           {/* Reservation Card */}
-          {reservationsEnabled ? (
+          {hasPublicReservations ? (
             <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
@@ -158,8 +185,10 @@ export default function PublicHubPage() {
               <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mb-4">
                 <Calendar className="w-7 h-7 text-muted-foreground" />
               </div>
-              <h3 className="font-bold text-foreground text-lg mb-1">Reservations are disabled</h3>
-              <p className="text-xs text-muted-foreground font-medium">Online booking is currently off</p>
+              <h3 className="font-bold text-foreground text-lg mb-1">Reservations unavailable</h3>
+              <p className="text-xs text-muted-foreground font-medium">
+                {reservationOptionsError ? "Booking availability is temporarily unavailable" : "Online booking is currently unavailable"}
+              </p>
             </div>
           )}
 

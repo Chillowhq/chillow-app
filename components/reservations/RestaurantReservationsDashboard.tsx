@@ -129,7 +129,7 @@ export function RestaurantReservationsDashboard() {
     setFilterStatus("all")
     setDeepLinkError(null)
     void apiClient.get<{ reservation: ReservationDashboardRecord }>("/owner/reservations", {
-      params: { reservationId },
+      params: { reservationId, mode: "timeslot" },
     }).then(({ data }) => {
       setLinkedReservation(data.reservation)
     }).catch(() => {

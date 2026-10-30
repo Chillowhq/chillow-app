@@ -64,12 +64,33 @@ test("mark all applies only through the server-provided cutoff", () => {
 
 test("deep links are allowlisted by entity type and never accept arbitrary URLs", () => {
   assert.equal(resolveOwnerNotificationDestination(notification()), "/owner/reservations?reservationId=reservation-1")
+  assert.equal(
+    resolveOwnerNotificationDestination(notification({ metadata: { reservationMode: "stay" } })),
+    "/owner/reservations?reservationId=reservation-1&mode=stay",
+  )
+  assert.equal(
+    resolveOwnerNotificationDestination(notification({ metadata: { reservationMode: "unsupported" } })),
+    "/owner/reservations?reservationId=reservation-1",
+  )
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "inventory_item", entityId: "item/1" })), "/owner/inventory/items?inventoryItemId=item%2F1")
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "feedback", entityId: "feedback-1" })), "/owner/feedback?feedbackId=feedback-1")
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "billing_invoice", entityId: "invoice-1" })), "/owner/billing?tab=billing&invoiceId=invoice-1")
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "business", entityId: "biz" })), "/owner/billing?tab=billing")
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "https://evil.example", entityId: "x" })), null)
   assert.equal(resolveOwnerNotificationDestination(notification({ entityType: "reservation", entityId: "" })), null)
+})
+
+test("owner reservations use URL-backed mode tabs and mode-specific dashboards", async () => {
+  const [page, hook] = await Promise.all([
+    read("./app/owner/reservations/page.tsx"),
+    read("./components/reservations/dashboard/useReservationDashboard.ts"),
+  ])
+  assert.match(page, /useSearchParams/)
+  assert.match(page, /role="tablist"/)
+  assert.match(page, /params\.set\("mode", mode\)/)
+  assert.match(page, /<HotelReservationsDashboard key="stay"/)
+  assert.match(page, /<RestaurantReservationsDashboard key="timeslot"/)
+  assert.match(hook, /reservationMode/)
 })
 
 test("notification controller uses authoritative APIs, SSE invalidation, and recovery triggers", async () => {
@@ -126,8 +147,8 @@ test("destination pages provide narrow entity identification and graceful inacce
     read("./app/owner/billing/page.tsx"),
   ])
   assert.match(inventory, /searchParams\.get\("inventoryItemId"\)/)
-  assert.match(restaurant, /params: \{ reservationId \}/)
-  assert.match(hotel, /params: \{ reservationId \}/)
+  assert.match(restaurant, /params: \{ reservationId, mode: "timeslot" \}/)
+  assert.match(hotel, /params: \{ reservationId, mode: "stay" \}/)
   assert.match(restaurant, /no longer available or you do not have access/)
   assert.match(hotel, /no longer available or you do not have access/)
   assert.match(feedback, /data-feedback-id/)

@@ -243,6 +243,7 @@ export function useReservationDashboard<
     const params = new URLSearchParams()
     if (businessId) params.set("businessId", businessId)
     params.set("view", "list")
+    params.set("mode", mode)
     if (filterStatus !== "all") params.set("status", filterStatus)
     if (filterDate) params.set("date", filterDate)
     if (searchQuery) params.set("search", searchQuery)
@@ -255,7 +256,7 @@ export function useReservationDashboard<
       params.set("cursor", cursorArg)
     }
     return params.toString()
-  }, [businessId, filterStatus, filterDate, searchQuery, listSortBy, listSortDirection])
+  }, [businessId, filterStatus, filterDate, searchQuery, listSortBy, listSortDirection, mode])
 
   const fetchList = useCallback(async (cursorArg: string | null = null, silent = false) => {
     if (!businessId) return
@@ -278,7 +279,7 @@ export function useReservationDashboard<
     if (!silent) setIsLoading(true)
     try {
       const response = await apiClient.get(
-        `/owner/reservations?businessId=${businessId}&view=calendar&start=${startStr}&endExclusive=${endExclusiveStr}`
+        `/owner/reservations?businessId=${businessId}&view=calendar&mode=${mode}&start=${startStr}&endExclusive=${endExclusiveStr}`
       )
       setReservations(response.data || [])
       setError(null)
@@ -287,13 +288,13 @@ export function useReservationDashboard<
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }, [businessId])
+  }, [businessId, mode])
 
   const fetchDay = useCallback(async (dateStr: string, silent = false) => {
     if (!businessId) return
     if (!silent) setIsLoading(true)
     try {
-      const response = await apiClient.get(`/owner/reservations?businessId=${businessId}&view=day&date=${dateStr}`)
+      const response = await apiClient.get(`/owner/reservations?businessId=${businessId}&view=day&mode=${mode}&date=${dateStr}`)
       setReservations(response.data || [])
       setError(null)
     } catch {
@@ -301,13 +302,13 @@ export function useReservationDashboard<
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }, [businessId])
+  }, [businessId, mode])
 
   const fetchToday = useCallback(async (silent = false) => {
     if (!businessId) return
     if (!silent) setIsLoading(true)
     try {
-      const params = new URLSearchParams({ businessId, view: "today" })
+      const params = new URLSearchParams({ businessId, view: "today", mode })
       if (mode === "timeslot" && operationalDate) params.set("date", operationalDate)
       const response = await apiClient.get(`/owner/reservations?${params.toString()}`)
       if (response.data.operations) setOperations(response.data.operations)
@@ -342,7 +343,7 @@ export function useReservationDashboard<
         try {
           const month = startStr.slice(0, 7)
           const response = await apiClient.get(
-            `/owner/reservations?businessId=${businessId}&view=calendar&month=${month}`,
+            `/owner/reservations?businessId=${businessId}&view=calendar&mode=${mode}&month=${month}`,
           )
           setReservations(response.data || [])
           setError(null)
@@ -361,6 +362,7 @@ export function useReservationDashboard<
 
   const reconcileRealtimeReservation = useCallback((payload: any) => {
     const incoming = payload?.reservation
+    if (incoming?.reservationMode && incoming.reservationMode !== mode) return
     const incomingId = String(incoming?.id || incoming?._id || "")
     if (!incomingId) return
 
@@ -388,9 +390,9 @@ export function useReservationDashboard<
       }
       return current
     })
-  }, [viewMode, listCursor, previousCursor, selectedDay, refreshActiveView])
+  }, [mode, viewMode, listCursor, previousCursor, selectedDay, refreshActiveView])
 
-  const reservationSseUrl = businessId && mode === "timeslot"
+  const reservationSseUrl = businessId
     ? `/events?role=reservations&businessId=${encodeURIComponent(businessId)}&permission=${MANAGER_PERMISSIONS.RESERVATIONS_VIEW}`
     : ""
 

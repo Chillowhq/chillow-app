@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { apiClient, SESSION_REVOKED_EVENT } from "@/lib/axios-config"
 import { getCanonicalFrontendOrigin } from "@/lib/frontend-origin"
+import { getVenueIdentityLabel } from "@/lib/venue-identity"
 import { useAuthGuard } from "@/hooks/use-auth-guard"
 import { hasManagementArea, MANAGEMENT_ACCESS_AREAS, MANAGER_PERMISSIONS } from "@/lib/manager-permissions"
 import { Input } from "@/components/ui/input"
@@ -232,6 +233,8 @@ export default function SettingsPage() {
     logoUrl: "",
     plan: "",
     businessType: "",
+    venueType: "",
+    venueLabel: "",
     taxRate: 0,
     countryCode: ""
   })
@@ -258,6 +261,9 @@ export default function SettingsPage() {
     qrOrdering: boolean | null
     enableWaiterOrdering: boolean | null
     reservationsEnabled: boolean | null
+    // null preserves the backend's legacy-primary-mode behaviour until the
+    // owner intentionally saves an explicit public booking configuration.
+    publicReservationModes: Array<"stay" | "timeslot"> | null
 
   }>({
     dineIn: null,
@@ -268,6 +274,7 @@ export default function SettingsPage() {
     qrOrdering: null,
     enableWaiterOrdering: null,
     reservationsEnabled: null,
+    publicReservationModes: null,
 
   })
 
@@ -316,6 +323,8 @@ export default function SettingsPage() {
         logoUrl: data.logoUrl || "",
         plan: data.plan || "starter",
         businessType: data.businessType || "restaurant",
+        venueType: data.venueType || data.capabilities?.identity?.venueType || "",
+        venueLabel: data.capabilities?.identity?.venueLabel || user?.capabilities?.identity?.venueLabel || "",
         taxRate: data.taxRate || 0,
         countryCode: data.countryCode || "mt"
       })
@@ -355,6 +364,9 @@ export default function SettingsPage() {
         qrOrdering: prefs?.qrOrderingEnabled ?? true,
         enableWaiterOrdering: prefs?.enableWaiterOrdering ?? true,
         reservationsEnabled: data.settings?.reservationsEnabled ?? true,
+        publicReservationModes: Array.isArray(data.settings?.publicReservationModes)
+          ? data.settings.publicReservationModes.filter((mode: unknown): mode is "stay" | "timeslot" => mode === "stay" || mode === "timeslot")
+          : null,
       }))
       setTipsEnabled(data.settings?.tipsEnabled ?? data.tipsEnabled ?? false)
 
@@ -467,8 +479,9 @@ export default function SettingsPage() {
         operatingHours: hoursObject
       })
 
-      if (hasFoodService) {
-        // 3. Save Ordering & Settings
+      if (hasFoodService || supportedReservationModes.length > 0) {
+        // 3. Save shared reservation settings. Ordering values are retained for
+        // lodging-only businesses so this remains the canonical settings route.
         await apiClient.patch("/business/settings/ordering-preferences", {
           businessId,
           orderingPreferences: {
@@ -482,10 +495,16 @@ export default function SettingsPage() {
           },
           settings: {
             reservationsEnabled: ordering.reservationsEnabled,
-            tipsEnabled
+            tipsEnabled,
+            ...(ordering.publicReservationModes === null
+              ? {}
+              : { publicReservationModes: ordering.publicReservationModes })
           }
         })
 
+      }
+
+      if (hasFoodService) {
         // 4. Save Payment Preferences
         if (!payments.onlinePayments && !payments.offlinePayments) {
           toast.error("You must enable at least one payment channel (Online or Offline)")
@@ -591,6 +610,14 @@ export default function SettingsPage() {
   const hasFoodService = isHotel
     ? foodServiceEnabled
     : (capabilitySections ? capabilitySections.includes("foodService") : true)
+  const supportedReservationModes = user?.capabilities?.reservations?.modes
+    ?.filter((mode: unknown): mode is "stay" | "timeslot" => mode === "stay" || mode === "timeslot")
+    ?? []
+  const legacyPrimaryReservationMode = user?.capabilities?.reservations?.primaryMode
+  const effectivePublicReservationModes = ordering.publicReservationModes
+    ?? (legacyPrimaryReservationMode === "stay" || legacyPrimaryReservationMode === "timeslot"
+      ? [legacyPrimaryReservationMode]
+      : [])
   const visibleSettingsTabs = settingsTabs.filter((tab) => {
     if (isManager && !["operations", "preferences"].includes(tab.id)) return false
     if (tab.id === "property-profile") return hasBusinessProfile && !isManager
@@ -749,10 +776,10 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                          <span>Business Type</span>
+                          <span>Venue Type</span>
                           <span className="px-1.5 py-0.5 rounded bg-secondary text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Read-only</span>
                         </label>
-                        <input type="text" value={profile.businessType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())} readOnly className="w-full p-3 rounded-xl border border-border bg-muted/40 text-muted-foreground focus:outline-none font-medium cursor-default capitalize" />
+                        <input type="text" value={getVenueIdentityLabel(profile)} readOnly className="w-full p-3 rounded-xl border border-border bg-muted/40 text-muted-foreground focus:outline-none font-medium cursor-default capitalize" />
                       </div>
 
                       <div>
@@ -1406,6 +1433,34 @@ export default function SettingsPage() {
                     </div>
                     <ToggleSwitch label="Enable reservations" checked={ordering.reservationsEnabled ?? true} onChange={() => setOrdering({ ...ordering, reservationsEnabled: !ordering.reservationsEnabled })} />
                   </div>
+
+                  {supportedReservationModes.map((mode) => {
+                    const isStay = mode === "stay"
+                    const isPublic = effectivePublicReservationModes.includes(mode)
+                    const title = isStay ? "Allow public stay bookings" : "Allow public table reservations"
+                    const description = isStay
+                      ? "Show the stay booking flow when accommodation is ready to book."
+                      : "Show the dining reservation flow when tables and times are ready to book."
+
+                    return (
+                      <div key={mode} className="flex items-center justify-between p-4 rounded-xl border border-border/50">
+                        <div>
+                          <p className="font-bold text-foreground">{title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+                        </div>
+                        <ToggleSwitch
+                          label={title}
+                          checked={isPublic}
+                          onChange={() => {
+                            const nextModes = isPublic
+                              ? effectivePublicReservationModes.filter((reservationMode) => reservationMode !== mode)
+                              : [...effectivePublicReservationModes, mode]
+                            setOrdering({ ...ordering, publicReservationModes: nextModes })
+                          }}
+                        />
+                      </div>
+                    )
+                  })}
 
                 </div>
               </section>

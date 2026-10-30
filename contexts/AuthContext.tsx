@@ -19,6 +19,7 @@ export interface DashboardUser {
   name?: string
   displayName?: string
   businessType?: string
+  venueType?: string | null
   modules?: BusinessModule[]
   capabilities?: BusinessCapabilities
   currency?: string

@@ -124,7 +124,7 @@ export function HotelReservationsDashboard() {
     setFilterStatus("all");
     setDeepLinkError(null);
     void apiClient.get<{ reservation: ReservationDashboardRecord }>("/owner/reservations", {
-      params: { reservationId },
+      params: { reservationId, mode: "stay" },
     }).then(({ data }) => {
       setLinkedReservation(data.reservation);
     }).catch(() => {

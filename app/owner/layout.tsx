@@ -28,6 +28,9 @@ import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useAuthGuard } from "@/hooks/use-auth-guard"
@@ -454,9 +457,10 @@ function OwnerLayoutInner({
   const displayName = user.displayName || "Business"
 
   return (
-    <BusinessProvider 
-      businessType={user.businessType} 
-      modules={user.modules} 
+      <BusinessProvider
+        businessType={user.businessType}
+        venueType={user.venueType}
+        modules={user.modules}
       capabilities={user.capabilities}
       currency={user.currency}
       taxRate={user.taxRate}
@@ -487,6 +491,10 @@ function OwnerLayoutInner({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-60">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Owner navigation</SheetTitle>
+                    <SheetDescription>Navigate the Chillow owner workspace.</SheetDescription>
+                  </SheetHeader>
                   <Sidebar
                     displayName={displayName}
                     onLogout={logout}

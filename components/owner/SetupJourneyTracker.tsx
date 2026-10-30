@@ -37,7 +37,7 @@ export default function SetupJourneyTracker() {
             <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
               <p className="font-bold text-sm text-emerald-900 dark:text-emerald-100">Setup complete</p>
-              <p className="text-xs text-emerald-700 dark:text-emerald-300">You're ready to start taking orders.</p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-300">{progress.completionMessage || "Your workspace is ready."}</p>
             </div>
           </div>
           <Button 

@@ -357,7 +357,7 @@ export function StaffRestaurantReservationDialog({
           key: `restaurant:${crypto.randomUUID()}`,
         }
       }
-      await apiClient.post("/owner/reservations", payload, {
+      await apiClient.post("/owner/reservations?mode=timeslot", payload, {
         headers: { "Idempotency-Key": reservationAttemptRef.current.key },
       })
       toast.success(isWalkIn ? "Walk-in guest seated." : "Reservation created and confirmed.")

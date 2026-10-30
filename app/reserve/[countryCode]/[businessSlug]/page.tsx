@@ -34,6 +34,11 @@ import {
   getMaximumConfiguredServicePointCapacity,
 } from "@/lib/reservation-capacity";
 import { parseRestaurantReservationPrefill } from "@/lib/restaurant-reservation-prefill";
+import {
+  parsePublicReservationModes,
+  resolvePublicReservationMode,
+  type PublicReservationMode,
+} from "@/lib/public-reservation-mode";
 
 const STEPS = ["When?", "Details", "Contact", "Confirm"] as const;
 
@@ -105,6 +110,8 @@ export default function ReservationPage() {
   const [handoffNotice, setHandoffNotice] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [step, setStep] = useState(0);
+  const [publicReservationModes, setPublicReservationModes] = useState<PublicReservationMode[]>([]);
+  const [reservationMode, setReservationMode] = useState<PublicReservationMode | null>(null);
 
   const [formData, setFormData] = useState({
     customerName: "",
@@ -124,17 +131,36 @@ export default function ReservationPage() {
 
   useEffect(() => {
     if (!businessSlug) return;
+    let isActive = true;
     const fetchBusiness = async () => {
       try {
-        const res = await apiClient.get(`/public/business/${countryCode}/${businessSlug}`);
-        const data = res.data;
-        // The primary business type selects the reservation experience.
-        // Enabled modules extend that business without replacing its primary flow.
-        if (data.businessType === "hotel") {
-          setBusiness(data);
-          setIsLoading(false);
+        setError(null);
+        const [businessResponse, optionsResponse] = await Promise.all([
+          apiClient.get(`/public/business/${countryCode}/${businessSlug}`),
+          apiClient.get(`/public/reservation-options/${countryCode}/${businessSlug}`),
+        ]);
+        const data = businessResponse.data;
+        const modes = parsePublicReservationModes(optionsResponse.data?.modes);
+        const requestedMode = searchParams.get("mode");
+        if (!isActive) return;
+        const modeResolution = resolvePublicReservationMode({
+          requestedMode,
+          availableModes: modes,
+        });
+
+        setBusiness(data);
+        setPublicReservationModes(modes);
+        setReservationMode(modeResolution.mode);
+
+        if (modes.length === 0) {
+          setError("Online reservations are not currently available for this business.");
           return;
         }
+
+        if (modeResolution.explicitlyUnavailable) {
+          setError("That booking option is not currently available. Choose an available option below.");
+        }
+
         const maximumGuestCapacity =
           getMaximumConfiguredServicePointCapacity(data.servicePoints || []);
         if (maximumGuestCapacity !== null) {
@@ -143,19 +169,18 @@ export default function ReservationPage() {
             guestCount: Math.min(current.guestCount, maximumGuestCapacity),
           }));
         }
-        if (data.settings?.reservationsEnabled === false) {
-          setError("Reservations are currently disabled for this business.");
-        } else {
-          setBusiness(data);
-        }
       } catch {
+        if (!isActive) return;
         setError("Business not found or not currently available.");
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
     fetchBusiness();
-  }, [businessSlug, countryCode]);
+    return () => {
+      isActive = false;
+    };
+  }, [businessSlug, countryCode, searchParams]);
 
 
   const handleSubmit = async () => {
@@ -173,6 +198,7 @@ export default function ReservationPage() {
         ...formData, 
         businessSlug,
         countryCode,
+        reservationMode: "timeslot",
         seatingPreference: "no_preference",
         servicePointId: formData.servicePointId || null,
       }, {
@@ -215,7 +241,7 @@ export default function ReservationPage() {
   const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
 
   useEffect(() => {
-    if (!business || business.businessType === "hotel" || prefillAppliedRef.current) {
+    if (!business || reservationMode !== "timeslot" || prefillAppliedRef.current) {
       return;
     }
 
@@ -247,7 +273,7 @@ export default function ReservationPage() {
         : {}),
       ...(prefill.partySize ? { guestCount: prefill.partySize } : {}),
     }));
-  }, [business, searchParams]);
+  }, [business, reservationMode, searchParams]);
 
   useEffect(() => {
     const preferredStartTime = pendingPrefilledStartTimeRef.current;
@@ -421,6 +447,58 @@ export default function ReservationPage() {
     );
   }
 
+  if (publicReservationModes.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="max-w-sm w-full bg-card border rounded-2xl p-8 text-center shadow-sm">
+          <CalendarDays className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h1 className="text-xl font-bold mb-2 text-foreground">Reservations unavailable</h1>
+          <p className="text-muted-foreground mb-6">{error || "Online reservations are not currently available for this business."}</p>
+          <button onClick={() => router.push(`/b/${countryCode}/${businessSlug}`)} className="text-primary font-semibold hover:underline">
+            Back to business
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (reservationMode === null) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-card border rounded-3xl p-7 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">{business.displayName || "This venue"}</p>
+          <h1 className="text-2xl font-black text-foreground">What would you like to book?</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Choose an available reservation type to continue.</p>
+          {error && <p className="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700">{error}</p>}
+          <div className="mt-6 grid gap-3">
+            {publicReservationModes.map((mode) => {
+              const isStay = mode === "stay";
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    const nextSearchParams = new URLSearchParams(searchParams.toString());
+                    nextSearchParams.set("mode", mode);
+                    setReservationMode(mode);
+                    router.replace(`/reserve/${countryCode}/${businessSlug}?${nextSearchParams.toString()}`);
+                  }}
+                  className="flex items-center gap-4 rounded-2xl border border-border p-4 text-left transition-colors hover:bg-muted/50"
+                >
+                  {isStay ? <LayoutGrid className="h-6 w-6 text-primary" /> : <Utensils className="h-6 w-6 text-primary" />}
+                  <span>
+                    <span className="block font-bold text-foreground">{isStay ? "Book a stay" : "Reserve a table"}</span>
+                    <span className="block text-sm text-muted-foreground">{isStay ? "Choose accommodation and dates" : "Choose a date, time, and party size"}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   // ── Success ────────────────────────────────────────────────────────────────
   if (success) {
     return (
@@ -464,7 +542,7 @@ export default function ReservationPage() {
   }
 
   // ── Hotel Flow ─────────────────────────────────────────────────────────────
-  if (business?.businessType === "hotel") {
+  if (reservationMode === "stay") {
     return (
       <HotelReservationFlow
         business={business}

@@ -6,5 +6,5 @@ interface Props {
 
 export default async function HotelReservationRedirect({ params }: Props) {
   const { countryCode, businessSlug } = await params;
-  redirect(`/reserve/${countryCode}/${businessSlug}`);
+  redirect(`/reserve/${countryCode}/${businessSlug}?mode=stay`);
 }

@@ -389,7 +389,7 @@ export function StaffHotelReservationDialog({
         };
       }
 
-      const { data } = await apiClient.post("/owner/reservations", payload, {
+      const { data } = await apiClient.post("/owner/reservations?mode=stay", payload, {
         headers: { "Idempotency-Key": reservationAttemptRef.current.key },
       });
 

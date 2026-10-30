@@ -7,6 +7,7 @@ export type ServicePointTerm = ServicePointTerminology
 
 interface BusinessContextType {
   businessType: string
+  venueType?: string | null
   modules: BusinessModule[]
   capabilities?: BusinessCapabilities
   term: ServicePointTerm
@@ -31,6 +32,7 @@ const BusinessContext = createContext<BusinessContextType | undefined>(undefined
 export function BusinessProvider({ 
   children, 
   businessType,
+  venueType,
   modules,
   capabilities,
   currency = "USD",
@@ -39,6 +41,7 @@ export function BusinessProvider({
 }: { 
   children: ReactNode
   businessType?: string
+  venueType?: string | null
   modules?: BusinessModule[]
   capabilities?: BusinessCapabilities
   currency?: string
@@ -49,7 +52,7 @@ export function BusinessProvider({
   const term = getServicePointTerm(capabilities)
 
   return (
-    <BusinessContext.Provider value={{ businessType: type, modules: modules || [], capabilities, term, currency, taxRate, timezone }}>
+    <BusinessContext.Provider value={{ businessType: type, venueType, modules: modules || [], capabilities, term, currency, taxRate, timezone }}>
       {children}
     </BusinessContext.Provider>
   )
@@ -59,7 +62,7 @@ export function useBusinessSettings() {
   const context = useContext(BusinessContext)
   if (!context) {
     // Graceful fallback to prevent crashes if used outside provider
-    return { businessType: "restaurant", modules: [], capabilities: undefined, term: genericTerm, currency: "USD", taxRate: 0, timezone: "UTC" }
+    return { businessType: "restaurant", venueType: undefined, modules: [], capabilities: undefined, term: genericTerm, currency: "USD", taxRate: 0, timezone: "UTC" }
   }
   return context
 }

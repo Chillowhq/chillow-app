@@ -235,8 +235,7 @@ export function createCustomerNotificationRecoveryCoordinator(
     load: () => Promise<T>,
     apply: (result: T) => void | Promise<void>,
   ) => {
-    let promise: Promise<void>
-    promise = (async () => {
+    const promise = (async () => {
       const result = await load()
       if (!isCurrent(scopeKey)) return
       await apply(result)
@@ -277,8 +276,7 @@ export function createCustomerNotificationRecoveryCoordinator(
         return queuedFresh.promise
       }
 
-      let queuedPromise: Promise<void>
-      queuedPromise = current.promise
+      const queuedPromise = current.promise
         .catch(() => undefined)
         .then(() => {
           if (!isCurrent(scopeKey)) return

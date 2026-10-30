@@ -819,6 +819,7 @@ export function HotelReservationFlow({ business, countryCode, businessSlug }: Ho
           servicePointId: selectedServicePoint?.servicePointId,
           servicePointLabel: selectedServicePoint?.label,
           specialRequest: specialRequest.trim(),
+          reservationMode: "stay",
           isHotelBooking: true,
         }, {
           headers: { "Idempotency-Key": reservationAttemptRef.current.key },
