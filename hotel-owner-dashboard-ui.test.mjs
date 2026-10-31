@@ -9,10 +9,10 @@ async function source(path) {
   return readFile(path, "utf8")
 }
 
-test("owner dashboard selects the server-authorized hotel view without a client business id", async () => {
+test("owner dashboard selects a server-authorized view without a client business id", async () => {
   const page = await source(pagePath)
 
-  assert.match(page, /apiClient\.get<DashboardPayload>\("\/owner\/dashboard"\)/)
+  assert.match(page, /apiClient\.get<DashboardPayload>\("\/owner\/dashboard", \{\s*params: isHybridDashboard \? \{ dashboard: selectedDashboard \} : undefined,/)
   assert.doesNotMatch(page, /owner\/dashboard\?businessId=/)
   assert.match(page, /data\?\.dashboardType === "hotel"/)
   assert.match(page, /<HotelDashboard/)
@@ -40,9 +40,25 @@ test("hotel dashboard keeps hotel operations primary and food service separate",
     assert.match(component, new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
   }
 
-  assert.match(component, /foodService \? <section/)
+  assert.match(component, /!dashboardTabs && foodService \? <section/)
   assert.doesNotMatch(component, /Today&apos;s food revenue/)
   assert.doesNotMatch(component, /Open food orders/)
+})
+
+test("hybrid dashboards use capability-derived URL state and reuse each existing dashboard", async () => {
+  const page = await source(pagePath)
+
+  assert.match(page, /capabilities\?\.visibleModules/)
+  assert.match(page, /visibleModules\.includes\("lodging"\) && visibleModules\.includes\("foodService"\)/)
+  assert.match(page, /searchParams\.get\("dashboard"\)/)
+  assert.match(page, /params\.set\("dashboard", selectedDashboard\)/)
+  assert.match(page, /router\.push\(`\$\{pathname\}\?\$\{params\.toString\(\)\}`\)/)
+  assert.match(page, /Accommodation/)
+  assert.match(page, /Food Service/)
+  assert.match(page, /title="Dashboard"/)
+  assert.match(page, /dashboardTabs=\{hybridDashboardHeader\}/)
+  assert.match(page, /hideHeader=\{isHybridDashboard\}/)
+  assert.match(page, /\{hybridDashboardHeader\}/)
 })
 
 test("hotel dashboard handles restricted sections and uses established owner routes", async () => {

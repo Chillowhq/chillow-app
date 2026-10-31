@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from "react"
 import Link from "next/link"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   ShoppingBag,
   DollarSign,
@@ -163,7 +164,16 @@ function HealthBadge({ status, label }: { status: "green" | "yellow" | "red" | "
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function OwnerCommandCenter() {
   const { user } = useAuthGuard()
-  const { currency } = useBusinessSettings()
+  const { currency, capabilities } = useBusinessSettings()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const visibleModules = capabilities?.visibleModules ?? []
+  const isHybridDashboard = visibleModules.includes("lodging") && visibleModules.includes("foodService")
+  const requestedDashboard = searchParams.get("dashboard")
+  const selectedDashboard = isHybridDashboard && requestedDashboard === "foodService"
+    ? "foodService"
+    : "hotel"
   const { progress: setupProgress, refreshSetupProgress } = useSetupProgress()
   const [data, setData] = useState<DashboardPayload | null>(null)
   const [setupCollapsed, setSetupCollapsed] = useState(false)
@@ -184,7 +194,9 @@ export default function OwnerCommandCenter() {
     if (!isSilent) setLoading(true)
     setPageError(null)
     try {
-      const dashRes = await apiClient.get<DashboardPayload>("/owner/dashboard")
+      const dashRes = await apiClient.get<DashboardPayload>("/owner/dashboard", {
+        params: isHybridDashboard ? { dashboard: selectedDashboard } : undefined,
+      })
       if (fetchGeneration === fetchGenerationRef.current) setData(dashRes.data)
     } catch (err) {
       console.error("[Dashboard fetch error]", err)
@@ -194,7 +206,7 @@ export default function OwnerCommandCenter() {
     } finally {
       if (fetchGeneration === fetchGenerationRef.current) setLoading(false)
     }
-  }, [user?.businessId])
+  }, [isHybridDashboard, selectedDashboard, user?.businessId])
 
   const triggerDebouncedRefresh = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -209,7 +221,21 @@ export default function OwnerCommandCenter() {
     setData(null)
     setPageError(null)
     if (user?.businessId) void fetchData(false)
-  }, [user?.businessId, fetchData])
+  }, [user?.businessId, selectedDashboard, fetchData])
+
+  useEffect(() => {
+    if (!isHybridDashboard || requestedDashboard === selectedDashboard) return
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("dashboard", selectedDashboard)
+    router.replace(`${pathname}?${params.toString()}`)
+  }, [isHybridDashboard, pathname, requestedDashboard, router, searchParams, selectedDashboard])
+
+  const selectDashboard = (dashboard: "hotel" | "foodService") => {
+    if (!isHybridDashboard || dashboard === selectedDashboard) return
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("dashboard", dashboard)
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   // Clean up debounce timer on unmount
   useEffect(() => {
@@ -264,9 +290,46 @@ export default function OwnerCommandCenter() {
   }
 
   const userName = user?.name || "there"
+  const dashboardTabs = isHybridDashboard ? (
+    <nav className="border-t border-border px-4 sm:px-6" aria-label="Dashboard workspace">
+      <div className="mx-auto flex max-w-7xl gap-1" role="tablist" aria-label="Dashboard views">
+        {[
+          { id: "hotel", label: "Accommodation" },
+          { id: "foodService", label: "Food Service" },
+        ].map((tab) => {
+          const active = selectedDashboard === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={`border-b-2 px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              onClick={() => selectDashboard(tab.id as "hotel" | "foodService")}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
+      </div>
+    </nav>
+  ) : null
+  const hybridDashboardHeader = isHybridDashboard ? (
+    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
+      <PageHeader
+        className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6"
+        title="Dashboard"
+        titleClassName="text-xl tracking-normal"
+        description={todayLabel()}
+        descriptionClassName="mt-0 text-xs"
+        action={<button onClick={() => void fetchData(false)} disabled={loading} className="p-2 border border-border rounded-lg transition-colors hover:bg-secondary disabled:opacity-40" title="Refresh" aria-label="Refresh Dashboard"><RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /></button>}
+      />
+      {dashboardTabs}
+    </header>
+  ) : null
 
   // Skeleton Initial Load
-  if (loading && !data) {
+  if ((loading && !data) || (isHybridDashboard && data?.dashboardType !== selectedDashboard)) {
     return (
       <div className="min-h-screen bg-background pb-16">
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -331,6 +394,8 @@ export default function OwnerCommandCenter() {
         dismissingSetup={dismissingSetup}
         onToggleSetup={() => setSetupCollapsed((value) => !value)}
         onDismissSetup={() => void dismissSetupGuide()}
+        dashboardTabs={hybridDashboardHeader}
+        hideHeader={isHybridDashboard}
       />
     )
   }
@@ -347,6 +412,7 @@ export default function OwnerCommandCenter() {
 
   return (
     <div className="min-h-screen bg-background pb-16">
+      {hybridDashboardHeader}
       {/* ── Sticky Header ────────────────────────────────────────────── */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
         <PageHeader

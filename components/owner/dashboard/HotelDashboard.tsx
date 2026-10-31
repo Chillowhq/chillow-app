@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import type { ReactNode } from "react"
 import {
   AlertTriangle,
   BedDouble,
@@ -29,6 +30,8 @@ type Props = {
   dismissingSetup: boolean
   onToggleSetup: () => void
   onDismissSetup: () => void
+  dashboardTabs?: ReactNode
+  hideHeader?: boolean
 }
 
 const severityClasses = {
@@ -89,6 +92,8 @@ export function HotelDashboard({
   dismissingSetup,
   onToggleSetup,
   onDismissSetup,
+  dashboardTabs,
+  hideHeader = false,
 }: Props) {
   const { access, operations, housekeeping, financialSummary, foodService } = data
   const quickActions = [
@@ -102,9 +107,10 @@ export function HotelDashboard({
 
   return (
     <div className="min-h-screen bg-background pb-16">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
+      {dashboardTabs}
+      {!hideHeader ? <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-sm">
         <PageHeader className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6" title="Hotel Dashboard" titleClassName="text-xl tracking-normal" description={`${formatBusinessDate(data.businessDate)} · ${data.timezone}`} descriptionClassName="mt-0 text-xs" action={<Button type="button" size="icon" variant="outline" onClick={onRefresh} disabled={loading} title="Refresh hotel dashboard" aria-label="Refresh hotel dashboard"><RefreshCw className={loading ? "size-4 animate-spin" : "size-4"} /></Button>} />
-      </header>
+      </header> : null}
 
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6">
         <section className="rounded-2xl border border-border bg-gradient-to-r from-primary/10 via-card to-card p-6 shadow-sm"><p className="text-sm font-semibold text-muted-foreground">Hotel overview</p><h1 className="mt-1 text-2xl font-black text-foreground">Welcome back, {userName}</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">See arrivals, departures, room status, and the work that needs attention today.</p></section>
@@ -131,7 +137,7 @@ export function HotelDashboard({
           <section className="rounded-2xl border border-border bg-card p-6 shadow-sm"><h2 className="text-sm font-black text-foreground">Quick actions</h2><div className="mt-4 grid grid-cols-2 gap-2">{quickActions.map(({ href, label, icon: Icon }) => <Link key={href} href={href} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border border-border p-3 text-center text-xs font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/5"><Icon className="size-4 text-primary" />{label}</Link>)}</div>{quickActions.length === 0 ? <p className="mt-4 text-sm text-muted-foreground">No additional workspaces are available for your role.</p> : null}</section>
         </div>
 
-        {foodService ? <section className="rounded-2xl border border-border bg-card p-6 shadow-sm"><div className="flex items-center gap-2"><DollarSign className="size-4 text-primary" /><h2 className="text-sm font-black text-foreground">Food service</h2></div><p className="mt-1 text-xs text-muted-foreground">This is separate from hotel booking revenue.</p><div className="mt-5 grid grid-cols-3 gap-4"><div><p className="text-2xl font-black text-foreground">{foodService.todayOrders ?? "—"}</p><p className="text-xs text-muted-foreground">Orders today</p></div><div><p className="text-2xl font-black text-foreground">{foodService.activeOrders ?? "—"}</p><p className="text-xs text-muted-foreground">Active orders</p></div><div><p className="text-2xl font-black text-foreground">{foodService.paidRevenueCents === null ? "—" : formatCents(foodService.paidRevenueCents, data.currency)}</p><p className="text-xs text-muted-foreground">Paid food revenue</p></div></div></section> : null}
+        {!dashboardTabs && foodService ? <section className="rounded-2xl border border-border bg-card p-6 shadow-sm"><div className="flex items-center gap-2"><DollarSign className="size-4 text-primary" /><h2 className="text-sm font-black text-foreground">Food service</h2></div><p className="mt-1 text-xs text-muted-foreground">This is separate from hotel booking revenue.</p><div className="mt-5 grid grid-cols-3 gap-4"><div><p className="text-2xl font-black text-foreground">{foodService.todayOrders ?? "—"}</p><p className="text-xs text-muted-foreground">Orders today</p></div><div><p className="text-2xl font-black text-foreground">{foodService.activeOrders ?? "—"}</p><p className="text-xs text-muted-foreground">Active orders</p></div><div><p className="text-2xl font-black text-foreground">{foodService.paidRevenueCents === null ? "—" : formatCents(foodService.paidRevenueCents, data.currency)}</p><p className="text-xs text-muted-foreground">Paid food revenue</p></div></div></section> : null}
       </main>
     </div>
   )
