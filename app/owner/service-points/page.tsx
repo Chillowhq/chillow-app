@@ -107,6 +107,11 @@ type StatusFilter =
 
 type HotelServicePointView = "list" | "rooms" | "others" | "room_types"
 
+type ServicePointKindDialogOption = {
+  kind: "room" | "other"
+  servicePointType: ServicePointType
+}
+
 const NON_ROOM_SERVICE_POINT_TYPES = ["table", "booth", "other"] as const
 
 function isHotelOtherServicePoint(servicePoint: ServicePoint) {
@@ -654,6 +659,21 @@ export default function ServicePointManagementPage() {
     ),
     [allowedServicePointTypes],
   )
+  const kindDialogOptions = useMemo<ServicePointKindDialogOption[]>(() => {
+    const availableTypes = kindDialogTypes || allowedServicePointTypes
+    const firstNonRoomType = availableTypes.find((type) =>
+      NON_ROOM_SERVICE_POINT_TYPES.includes(type as (typeof NON_ROOM_SERVICE_POINT_TYPES)[number]),
+    )
+
+    return [
+      ...(availableTypes.includes("room")
+        ? [{ kind: "room" as const, servicePointType: "room" as ServicePointType }]
+        : []),
+      ...(firstNonRoomType
+        ? [{ kind: "other" as const, servicePointType: firstNonRoomType }]
+        : []),
+    ]
+  }, [allowedServicePointTypes, kindDialogTypes])
   const servicePointsForCurrentList = useMemo(
     () => isHotelDashboard && hotelView === "others"
       ? servicePoints.filter(isHotelOtherServicePoint)
@@ -1593,29 +1613,29 @@ export default function ServicePointManagementPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-3 py-3 sm:grid-cols-2">
-                {(kindDialogTypes || allowedServicePointTypes).map((type) => (
+                {kindDialogOptions.map(({ kind, servicePointType }) => (
                   <button
-                    key={type}
+                    key={kind}
                     type="button"
                     className="flex min-h-28 flex-col items-start justify-between rounded-2xl border border-border p-4 text-left transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() => {
-                      if (type === "room") {
+                      if (kind === "room") {
                         openAddRoom()
                         return
                       }
                       setKindDialogOpen(false)
                       setEditingServicePoint(null)
-                      setRestaurantModalType(type === "table" || type === "booth" || type === "other" ? type : "table")
+                      setRestaurantModalType(servicePointType === "table" || servicePointType === "booth" || servicePointType === "other" ? servicePointType : "table")
                       setModalOpen(true)
                     }}
                   >
                     <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      {type === "room" ? <DoorOpen aria-hidden="true" /> : <LayoutGrid aria-hidden="true" />}
+                      {kind === "room" ? <DoorOpen aria-hidden="true" /> : <LayoutGrid aria-hidden="true" />}
                     </span>
                     <span>
-                      <span className="block font-black">{type === "room" ? TYPE_LABELS[type] : "Other"}</span>
+                      <span className="block font-black">{kind === "room" ? TYPE_LABELS.room : "Other"}</span>
                       <span className="mt-1 block text-xs text-muted-foreground">
-                        {type === "room"
+                        {kind === "room"
                           ? "Add an individual reservable hotel room."
                           : "Add another guest location, such as a table, poolside area, bar area, or cabana."}
                       </span>
