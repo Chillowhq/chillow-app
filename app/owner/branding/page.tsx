@@ -270,24 +270,36 @@ export default function BrandingPage() {
     const file = e.target.files?.[0]
     if (!file || !businessId) return
 
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Choose a JPEG, PNG, or WebP image.")
+      e.target.value = ""
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be 5MB or smaller.")
+      e.target.value = ""
+      return
+    }
+
     const form = new FormData()
     form.append("image", file)
-    form.append("businessId", businessId)
+    form.append("assetType", type)
 
     try {
       if (type === "logo") setIsUploadingLogo(true)
       else setIsUploadingCover(true)
       
-      const res = await apiClient.post("/upload/business-logo", form, {
+      const res = await apiClient.post("/upload/brand-asset", form, {
         headers: { "Content-Type": "multipart/form-data" }
       })
       
       if (type === "logo") {
-        setValue("logoUrl", res.data.logoUrl, { shouldDirty: true })
-        toast.success("Logo uploaded successfully!")
+        setValue("logoUrl", res.data.branding.logoUrl, { shouldDirty: false })
+        toast.success("Logo saved successfully.")
       } else {
-        setValue("coverImageUrl", res.data.logoUrl, { shouldDirty: true }) // endpoint returns logoUrl for any image uploaded
-        toast.success("Cover image uploaded successfully!")
+        setValue("coverImageUrl", res.data.branding.coverImageUrl, { shouldDirty: false })
+        toast.success("Storefront cover image saved successfully.")
       }
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Upload failed")
@@ -311,9 +323,9 @@ export default function BrandingPage() {
       <header className="sticky top-0 lg:top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
         <PageHeader
           className="px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
-          title="Customer Menu Branding"
+          title="Business Branding"
           titleClassName="flex items-center gap-2"
-          description="Customize the look and feel of your customer-facing QR menu."
+          description="Customize how your business appears across Chillow's guest-facing experiences."
           action={
             <Button
               type="submit"
@@ -340,7 +352,7 @@ export default function BrandingPage() {
               </div>
               <h2 className="text-xl font-black text-foreground">Premium Branding is Locked</h2>
               <p className="text-muted-foreground font-medium text-sm max-w-md">
-                Customizing your customer menu is available on the Growth plan. Upgrade to unlock custom logos, covers, and brand colors.
+                Customizing your business storefront is available on the Growth plan. Upgrade to unlock custom logos, cover images, and brand colors.
               </p>
               <Button type="button" className="mt-2 font-bold rounded-xl" size="lg" onClick={() => setShowManagePlan(true)}>Upgrade to Growth</Button>
             </div>
@@ -354,7 +366,7 @@ export default function BrandingPage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-foreground">Brand Assets</h2>
-                  <p className="text-xs text-muted-foreground font-medium">Upload your logo and cover image</p>
+                  <p className="text-xs text-muted-foreground font-medium">Manage your business logo and storefront cover image.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -402,14 +414,18 @@ export default function BrandingPage() {
                     {formError.message}
                   </FormNotice>
                 ) : null}
-                {/* Cover Upload */}
+                {/* Storefront cover upload */}
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-bold text-foreground">Menu Cover Image</label>
+                <label htmlFor="storefront-cover-image" className="text-sm font-bold text-foreground">Storefront Cover Image</label>
+                <p id="storefront-cover-image-help" className="-mt-1 text-xs text-muted-foreground">The main image displayed on your public business storefront.</p>
                 <input
                   ref={coverInputRef}
+                  id="storefront-cover-image"
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  aria-label="Upload storefront cover image"
+                  aria-describedby="storefront-cover-image-help"
                   onChange={(e) => handleFileUpload(e, "cover")}
                 />
                 <div
@@ -419,18 +435,18 @@ export default function BrandingPage() {
                   {isUploadingCover ? (
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   ) : branding.coverImageUrl ? (
-                      <img src={branding.coverImageUrl} alt="Current menu cover" className="w-full h-full object-cover" />
+                      <img src={branding.coverImageUrl} alt="Current storefront cover image" className="w-full h-full object-cover" />
                   ) : (
                     <>
                       <ImageIcon className="w-8 h-8 opacity-50 mb-2" />
-                      <span className="text-xs font-bold uppercase">Upload Cover</span>
+                      <span className="text-xs font-bold uppercase">Upload Storefront Cover</span>
                       <span className="text-[10px] opacity-70 mt-1">Recommended: 1200x400px</span>
                     </>
                   )}
                   {!isUploadingCover && (
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
                       <Upload className="w-5 h-5 text-white" />
-                      <span className="text-white text-xs font-bold">{branding.coverImageUrl ? "Change Cover" : "Upload Cover"}</span>
+                      <span className="text-white text-xs font-bold">{branding.coverImageUrl ? "Change Storefront Cover" : "Upload Storefront Cover"}</span>
                     </div>
                   )}
                 </div>
@@ -438,12 +454,15 @@ export default function BrandingPage() {
 
               {/* Logo Upload */}
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-bold text-foreground">Business Logo</label>
+                <label htmlFor="business-logo" className="text-sm font-bold text-foreground">Business Logo</label>
                 <input
                   ref={logoInputRef}
+                  id="business-logo"
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  aria-label="Upload business logo"
+                  aria-describedby="business-logo-help"
                   onChange={(e) => handleFileUpload(e, "logo")}
                 />
                 <div className="flex items-center gap-6">
@@ -467,7 +486,7 @@ export default function BrandingPage() {
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div id="business-logo-help" className="text-xs text-muted-foreground">
                     <p className="font-medium mb-1">Upload a square or circular logo with a transparent background for best results.</p>
                     <p className="opacity-70">Max size: 5MB (PNG, JPG, WebP)</p>
                   </div>
@@ -509,7 +528,7 @@ export default function BrandingPage() {
                   label="Background Color"
                   pickerLabel="Choose background color"
                   inputLabel="Background color hex value"
-                  description="Main background color of the menu interface."
+                  description="Main background color across your guest-facing experience."
                   error={errors.backgroundColor?.message}
                 />
               </div>
@@ -522,7 +541,7 @@ export default function BrandingPage() {
                       Remove Chillow Branding
                       {!isPro && <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] uppercase tracking-wider font-black">Growth</span>}
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-1">Hide the "Powered by Chillow" footer and watermarks from the customer menu.</p>
+                    <p className="text-xs text-muted-foreground mt-1">Hide the "Powered by Chillow" footer and watermarks from your guest-facing business experience.</p>
                   </div>
                   <Controller
                     control={control}
