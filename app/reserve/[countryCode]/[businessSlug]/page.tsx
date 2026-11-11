@@ -485,9 +485,9 @@ export default function ReservationPage() {
                   }}
                   className="flex items-center gap-4 rounded-2xl border border-border p-4 text-left transition-colors hover:bg-muted/50"
                 >
-                  {isStay ? <LayoutGrid className="h-6 w-6 text-primary" /> : <Utensils className="h-6 w-6 text-primary" />}
+                  {isStay ? <LayoutGrid className="h-6 w-6 text-primary" /> : <MapPin className="h-6 w-6 text-primary" />}
                   <span>
-                    <span className="block font-bold text-foreground">{isStay ? "Book a stay" : "Reserve a table"}</span>
+                    <span className="block font-bold text-foreground">{isStay ? "Book a stay" : "Reserve a spot"}</span>
                     <span className="block text-sm text-muted-foreground">{isStay ? "Choose accommodation and dates" : "Choose a date, time, and party size"}</span>
                   </span>
                 </button>
