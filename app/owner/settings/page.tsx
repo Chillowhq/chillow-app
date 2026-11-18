@@ -288,6 +288,7 @@ export default function SettingsPage() {
     receiptEmail: ""
   })
 
+  const [publicReservationModesDirty, setPublicReservationModesDirty] = useState(false)
   const [tipsEnabled, setTipsEnabled] = useState(false)
 
   // State for Section E: Table & QR Preferences (Local for now)
@@ -368,6 +369,7 @@ export default function SettingsPage() {
           ? data.settings.publicReservationModes.filter((mode: unknown): mode is "stay" | "timeslot" => mode === "stay" || mode === "timeslot")
           : null,
       }))
+      setPublicReservationModesDirty(false)
       setTipsEnabled(data.settings?.tipsEnabled ?? data.tipsEnabled ?? false)
 
       // Map payment preferences from real API response
@@ -496,9 +498,12 @@ export default function SettingsPage() {
           settings: {
             reservationsEnabled: ordering.reservationsEnabled,
             tipsEnabled,
-            ...(ordering.publicReservationModes === null
-              ? {}
-              : { publicReservationModes: ordering.publicReservationModes })
+            // Only submit public modes after an explicit user edit. Legacy or
+            // previously saved modes can be incompatible with current modules;
+            // unrelated settings saves must not re-submit them.
+            ...(publicReservationModesDirty && ordering.publicReservationModes !== null
+              ? { publicReservationModes: ordering.publicReservationModes }
+              : {})
           }
         })
 
@@ -545,6 +550,7 @@ export default function SettingsPage() {
         setSavedFoodServiceEnabled(foodServiceEnabled)
       }
 
+      setPublicReservationModesDirty(false)
       await refreshUser()
       if (!isManager) await refreshSetupProgress()
       toast.success("Settings saved successfully!")
@@ -1456,6 +1462,7 @@ export default function SettingsPage() {
                               ? effectivePublicReservationModes.filter((reservationMode) => reservationMode !== mode)
                               : [...effectivePublicReservationModes, mode]
                             setOrdering({ ...ordering, publicReservationModes: nextModes })
+                            setPublicReservationModesDirty(true)
                           }}
                         />
                       </div>
