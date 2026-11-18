@@ -11,7 +11,7 @@ import { MenuPageSkeleton } from "@/components/customer-loading-skeletons"
 import FeaturedSwiper from "@/components/featured-swiper"
 import ItemDetailSheet from "@/components/item-detail-sheet"
 import MenuCard from "@/components/menu-card"
-import { useCustomerGuestRealtime } from "@/components/providers/customer-guest-realtime-provider"
+import { useOptionalCustomerGuestRealtime } from "@/components/providers/customer-guest-realtime-provider"
 import { useCustomerTheme } from "@/components/providers/customer-theme-provider"
 import { BusinessProvider, getServicePointTerm } from "@/contexts/BusinessContext"
 import { apiClient } from "@/lib/axios-config"
@@ -68,7 +68,11 @@ export default function TableMenuView({
   const cartItems = useCartStore((state) => state.items)
   const ensureCartContext = useCartStore((state) => state.ensureContext)
   const { useBranding, branding } = useCustomerTheme()
-  const { refreshGuestVisit } = useCustomerGuestRealtime()
+  const guestRealtime = useOptionalCustomerGuestRealtime()
+  if (!isWaiterMode && !guestRealtime) {
+    throw new Error("Guest menu must be used within CustomerGuestRealtimeProvider")
+  }
+  const refreshGuestVisit = guestRealtime?.refreshGuestVisit
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -145,7 +149,7 @@ export default function TableMenuView({
     })
     if (!isWaiterMode && businessId) {
       saveBusinessId(businessId)
-      refreshGuestVisit()
+      refreshGuestVisit?.()
     }
     void fetchData()
   }, [
@@ -162,7 +166,7 @@ export default function TableMenuView({
     ensureSessionId()
     if (sessionToken) {
       saveTableToken(servicePointId, sessionToken)
-      refreshGuestVisit()
+      refreshGuestVisit?.()
     }
   }, [isWaiterMode, refreshGuestVisit, servicePointId, sessionToken])
 
