@@ -134,6 +134,13 @@ export function CustomerGuestRealtimeProvider({ children }: { children: ReactNod
   )
 }
 
+// Waitstaff-assisted ordering reuses the menu without a guest session.
+// Keep the strict hook for guest-only surfaces, and allow the shared menu
+// to detect the absence of a guest runtime in waiter mode.
+export function useOptionalCustomerGuestRealtime() {
+  return useContext(CustomerGuestRealtimeContext)
+}
+
 export function useCustomerGuestRealtime() {
   const context = useContext(CustomerGuestRealtimeContext)
   if (!context) {
